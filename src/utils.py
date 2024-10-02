@@ -103,7 +103,11 @@ def rast_to_list(rastdata,Xred,takemean="Y",dataclip="N") :
     output = np.zeros((round(arrdata.shape[0]/Xred)*round(arrdata.shape[1]/Xred),3))
     z = 0
     for n in range(0,round(arrdata.shape[0]/Xred)) :
+        if n % 100 == 0: 
+            print("n = "+str(n)+"(total = "+str(arrdata.shape[0]/Xred)+")")
         for i in range(0,round(arrdata.shape[1]/Xred)) :
+            if i % 100 == 0: 
+                print("n = "+str(n)+"; i = "+str(i)+"(total = "+str(arrdata.shape[0]/Xred)+","+str(arrdata.shape[1]/Xred)+")")
             nmid = int(n*Xred+Xred/2)
             imid = int(i*Xred+Xred/2)
             tmp = rio.transform.TransformMethodsMixin.xy(rastdata,nmid,imid)
