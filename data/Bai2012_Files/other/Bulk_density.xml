@@ -1,0 +1,3 @@
+<?xml version="1.0"?>
+<!--<!DOCTYPE metadata SYSTEM "http://www.esri.com/metadata/esriprof80.dtd">-->
+<metadata xml:lang="en"><Esri><CreaDate>20200309</CreaDate><CreaTime>23022000</CreaTime><SyncOnce>TRUE</SyncOnce><DataProperties><lineage><Process ToolSource="C:\Program Files\ArcGIS\ArcToolbox\Toolboxes\Spatial Analyst Tools.tbx\ExtractValuesToPoints" Date="20090413" Time="134544">ExtractValuesToPoints moisture bulkdensity "C:\Documents and Settings\ebai\My Documents\research\Global pattern\soil\bulkdensity\bulkden.shp" NONE VALUE_ONLY</Process></lineage></DataProperties><ArcGISFormat>1.0</ArcGISFormat></Esri></metadata>

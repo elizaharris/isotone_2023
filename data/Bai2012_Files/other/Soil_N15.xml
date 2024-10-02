@@ -1,0 +1,3 @@
+<?xml version="1.0"?>
+<!--<!DOCTYPE metadata SYSTEM "http://www.esri.com/metadata/esriprof80.dtd">-->
+<metadata xml:lang="en"><Esri><CreaDate>20200309</CreaDate><CreaTime>22420500</CreaTime><SyncOnce>TRUE</SyncOnce><DataProperties><lineage><Process ToolSource="C:\Program Files\ArcGIS\ArcToolbox\Toolboxes\Spatial Analyst Tools.tbx\ExtractValuesToPoints" Date="20090903" Time="165620">ExtractValuesToPoints points soil_n15 "C:\Documents and Settings\ebai\My Documents\research\Global pattern\soil_n15.shp" NONE VALUE_ONLY</Process></lineage></DataProperties><ArcGISFormat>1.0</ArcGISFormat></Esri></metadata>
