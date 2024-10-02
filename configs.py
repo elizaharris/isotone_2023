@@ -1,6 +1,6 @@
 
 # Set a name for this model run (no protected chacacters, including the date is a good idea)
-run_name = "Test_06122023"
+run_name = "Test_Arctic_02102024"
 
 # set time range and resolution
 res = {
@@ -8,10 +8,10 @@ res = {
     "yend": 2023,
     "lonstart": -180, # Longitude range and resolution
     "lonend": 180,
-    "lonres": 0.5,
-    "latstart": -60, # Latitude range and resolution
+    "lonres": 0.05,
+    "latstart": 30, # Latitude range and resolution
     "latend": 90,
-    "latres": 0.5,
+    "latres": 0.05,
 }
 
 # Set time range and resolution

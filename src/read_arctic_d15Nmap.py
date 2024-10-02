@@ -24,16 +24,14 @@ from src.utils import plot_map
 import configs as configs
 
 #%% Import the gridded dataset from Dan Kou
-
 arctic_d15N_rast = rio.open("data/largeData/202409_pred_soil15N_rast_permGlobal.tif")
 fig = plt.figure(figsize=(8,4))
 rioplot.show(arctic_d15N_rast)
 
-# set resolution and grid for this dataset
-lat_res = 180/arctic_d15N_rast.shape[0]*10
-lon_res = 360/arctic_d15N_rast.shape[1]*10
-lat_out = np.arange(60, 90, lat_res) # min max spacing
-lon_out = np.arange(-180, 180, lon_res)
+# set resolution and grid for model
+resolution = configs.res["ystart"]
+lat_out = np.arange(configs.res["latstart"], configs.res["latend"], configs.res["latres"]) # min max spacing
+lon_out = np.arange(configs.res["lonstart"], configs.res["lonend"], configs.res["lonres"])
 (LON,LAT) = np.meshgrid(lon_out,lat_out)
 
 arctic_d15N_list = src.utils.rast_to_list(arctic_d15N_rast,10,dataclip=(0,np.inf),takemean="N") # data as list (can reduce resolution here if desired)
@@ -52,13 +50,13 @@ plot_map(LON,LAT,arctic_d15N_grid,"Arctic soil d15N",filename="figs/input_data/a
 
 ##% Create an arctic mask that can be used with the main isoscape, with exactly the same resolution
 
-# set resolution and grid for main d15N data
-latm_out = np.arange(configs.res["latstart"], configs.res["latend"], configs.res["latres"]) # min max spacing
-lonm_out = np.arange(configs.res["lonstart"], configs.res["lonend"], configs.res["lonres"])
+# set resolution and grid for main d15N data (manual!) 
+latm_out = np.arange(-60, 90, 0.5) # min max spacing
+lonm_out = np.arange(-180, 180, 0.5)
 (LONm,LATm) = np.meshgrid(lonm_out,latm_out)
 arctic_d15N_coarsegrid = griddata((arctic_d15N_list[:,0],arctic_d15N_list[:,1]), arctic_d15N_list[:,2], (LONm,LATm), method='linear')
 
-plot_map(LON,LAT,arctic_d15N_coarsegrid,"Arctic soil d15N",filename="figs/input_data/arctic_soil_d15N_coarse")
+plot_map(LONm,LATm,arctic_d15N_coarsegrid,"Arctic soil d15N",filename="figs/input_data/arctic_soil_d15N_coarse")
 
 # Create the arctic mask
 arctic_mask_coarse = arctic_d15N_coarsegrid/arctic_d15N_coarsegrid
@@ -104,9 +102,9 @@ arcticmask_coarse[:,:] = arctic_mask_coarse
 ncout.close()
 
 # test the file!
-f = nc4.Dataset('data/climate_input_data.nc','r')
+f = nc4.Dataset('data/arctic_d15N_data.nc','r')
 plot_map(LON,LAT,f.variables["soild15N_arctic"][:,:],"soild15N_arctic")
 plot_map(LON,LAT,f.variables["arcticmask"][:,:],"arcticmask")
-plot_map(LON,LAT,f.variables["arctic_d15N_unc"][:,:],"arctic_d15N_unc")
+plot_map(LON,LAT,f.variables["soild15N_arctic_Unc"][:,:],"arctic_d15N_unc")
 plot_map(LONm,LATm,f.variables["soild15N_arctic_coarse"][:,:],"soild15N_arctic_coarse")
-plot_map(LONm,LATm,f.variables["arctic_mask_coarse"][:,:],"arctic_mask_coarse")
+plot_map(LONm,LATm,f.variables["arcticmask_coarse"][:,:],"arcticmask_coarse")

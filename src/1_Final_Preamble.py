@@ -26,6 +26,9 @@ import netCDF4 as nc4
 import time
 import datetime
 
+parentdir = os.getcwd()
+os.chdir(parentdir+"/isotone_arcticBranch") # Change to the isotone repo as working directory
+
 # Get the configs
 import configs as configs
 
@@ -37,7 +40,7 @@ import src.parameterisations_v3 as para # partition nitrif and denitrif
 # Set up time range
 years = np.arange(configs.res["ystart"],configs.res["yend"])
 
-# set resolution and grid for model
+# set resolution and grid for model (standard res, may be overwritten later for arctic)
 resolution = configs.res["ystart"]
 lat_out = np.arange(configs.res["latstart"], configs.res["latend"], configs.res["latres"]) # min max spacing
 lon_out = np.arange(configs.res["lonstart"], configs.res["lonend"], configs.res["lonres"])
@@ -63,16 +66,12 @@ N_grid = inputs.variables["soilN"][:,:]; plot_map(LON,LAT,N_grid,"N (g m-2)")
 AI_grid = inputs.variables["AridIndex"][:,:]; plot_map(LON,LAT,AI_grid,"Aridity Index")
 BulkD_grid = inputs.variables["BulkD"][:,:]; plot_map(LON,LAT,BulkD_grid,"Bulk Density (g cm-3)")
 WFPS_grid = inputs.variables["WFPS"][:,:]*100; plot_map(LON,LAT,WFPS_grid,"WFPS (%)")
-d15N_grid_new = inputs.variables["soild15N"][:,:]; plot_map(LON,LAT,d15N_grid_new,"d15N")
-d15Nerr_grid_new = inputs.variables["soild15N_BSUnc"][:,:]; plot_map(LON,LAT,d15Nerr_grid_new,"d15N uncertainty")
 
-# For d15N, use an old dataset for now...
-inputs = nc4.Dataset('data/climate_input_data_old.nc','r') 
-d15N_grid = d15N_grid_new.copy()*np.nan
-d15N_grid[0:290,0:720] = inputs.variables["soild15N"][:,:]
+# For d15N, switch to the Arctic dataset
+inputs = nc4.Dataset('data/arctic_d15N_data.nc','r') 
+d15N_grid = inputs.variables["soild15N_arctic_coarse"][:,:]
 plot_map(LON,LAT,d15N_grid,"d15N")
-d15Nerr_grid = d15Nerr_grid_new.copy()*np.nan
-d15Nerr_grid[0:290,0:720] = inputs.variables["soild15N_BSUnc"][:,:]
+d15Nerr_grid = d15N_grid/d15N_grid*5
 plot_map(LON,LAT,d15Nerr_grid,"d15N uncertainty")
 
 # Import estimates of the fraction of N volatilized as NH3, from Bai 2012, processed in src/regrid_fNH3_fromBai
@@ -80,7 +79,7 @@ f = nc4.Dataset('data/fNH3_data.nc','r')
 fNH3_grid = f.variables["fNH3"][:,:]; plot_map(LON,LAT,fNH3_grid,"fNH3")
 
 # Import EDGAR gridded emission estimates, processed in src/regrid_EDGAR
-f = nc4.Dataset('data/EDGAR_data_extrap.nc','r')
+f = nc4.Dataset('data/largeData/EDGAR_data_extrap.nc','r')
 AGS_grid = f.variables["AGS"][:,:,:]; plot_map(LON,LAT,AGS_grid[150,:,:],"EDGAR agriculture (g N2O-N/m2/year): 2000")
 TRO_grid = f.variables["TRO"][:,:,:]; plot_map(LON,LAT,TRO_grid[150,:,:],"EDGAR transport (g N2O-N/m2/year): 2000")
 IDE_grid = f.variables["IDE"][:,:,:]; plot_map(LON,LAT,IDE_grid[150,:,:],"EDGAR indirect (g N2O-N/m2/year): 2000")
@@ -89,11 +88,11 @@ CHE_grid = f.variables["IDE"][:,:,:]; plot_map(LON,LAT,CHE_grid[150,:,:],"EDGAR 
 ENE_grid = f.variables["WWT"][:,:,:]; plot_map(LON,LAT,ENE_grid[150,:,:],"EDGAR energy (g N2O-N/m2/year): 2000")
 
 # Import N inputs (fixation, deposition, fertilisation), processed in src/regrid_N_inputs
-Ninputs = nc4.Dataset('data/N_input_data.nc','r')
+Ninputs = nc4.Dataset('data/largeData/N_input_data.nc','r')
 datarange = Ninputs.variables["time"][:].data
 
 # Import T anomalies (annual, Hadley centre), processed in src/regrid_T_anomalies
-Tanom = nc4.Dataset('data/Tanom_data.nc','r')
+Tanom = nc4.Dataset('data/largeData/Tanom_data.nc','r')
 # Normalise to the beginning year, so that we have T anomalies relative to the first model year
 Tnorm = np.zeros(Tanom.variables["Tanom"].shape)
 Tstart = Tanom.variables["Tanom"][0,:,:].data
