@@ -57,7 +57,7 @@ area_grid = np.transpose(area_grid)
 ### Note: if the model grid range or resolution is changed, these inputs need to be rerun!
     
 # Import the data processed when created the isoscape
-inputs = nc4.Dataset('data/climate_input_data.nc','r')
+inputs = nc4.Dataset('data/largeData/climate_input_data_arctic.nc','r')
 C_grid = inputs.variables["soilC"][:,:]; plot_map(LON,LAT,C_grid,"soil C (kg m-2)")
 MAP_grid = inputs.variables["MAPrecip"][:,:]; plot_map(LON,LAT,MAP_grid,"MAP (mm)")
 MAT_grid = inputs.variables["MATemp"][:,:]; plot_map(LON,LAT,MAP_grid,"MAT (degC)",vminmax=(0,3000))
@@ -68,10 +68,10 @@ BulkD_grid = inputs.variables["BulkD"][:,:]; plot_map(LON,LAT,BulkD_grid,"Bulk D
 WFPS_grid = inputs.variables["WFPS"][:,:]*100; plot_map(LON,LAT,WFPS_grid,"WFPS (%)")
 
 # For d15N, switch to the Arctic dataset
-inputs = nc4.Dataset('data/arctic_d15N_data.nc','r') 
-d15N_grid = inputs.variables["soild15N_arctic_coarse"][:,:]
+inputs = nc4.Dataset('data/largeData/arctic_d15N_data.nc','r') 
+d15N_grid = inputs.variables["soild15N_arctic"][:,:]
 plot_map(LON,LAT,d15N_grid,"d15N")
-d15Nerr_grid = d15N_grid/d15N_grid*5
+d15Nerr_grid = inputs.variables["soild15N_arctic_Unc"][:,:]
 plot_map(LON,LAT,d15Nerr_grid,"d15N uncertainty")
 
 # Import estimates of the fraction of N volatilized as NH3, from Bai 2012, processed in src/regrid_fNH3_fromBai

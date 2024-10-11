@@ -228,7 +228,7 @@ plot_map(LON,LAT,WFPS_grid,"WFPS",filename="figs/input_data/WFPS")
 
 import netCDF4 as nc4
 
-ncout = nc4.Dataset('data/climate_input_data_arctic.nc','w','NETCDF4'); # using netCDF3 for output format 
+ncout = nc4.Dataset('data/largeData/climate_input_data_arctic.nc','w','NETCDF4'); # using netCDF3 for output format 
 ncout.createDimension('lon',LON.shape[1])
 ncout.createDimension('lat',LAT.shape[0])
 lonvar = ncout.createVariable('lon','f4',('lon'))
@@ -266,7 +266,7 @@ soild15N_craine[:,:] = soil15N_grid
 ncout.close()
 
 # test the file!
-f = nc4.Dataset('data/climate_input_data_arctic.nc','r')
+f = nc4.Dataset('data/largeData/climate_input_data_arctic.nc','r')
 plot_map(LON,LAT,f.variables["soilC"][:,:],"globalC_grid")
 plot_map(LON,LAT,f.variables["MAPrecip"][:,:],"MAP")
 plot_map(LON,LAT,f.variables["MATemp"][:,:],"MAT")

@@ -19,6 +19,9 @@ from datetime import datetime as dt
 import rasterio as rio
 from scipy.interpolate import griddata
 import os
+
+#parentdir = os.getcwd()
+#os.chdir(parentdir+"/isotone_arcticBranch") # Change to the isotone repo as working directory
 from src.utils import plot_map, reducesize, nc_to_list
 import configs as configs
 
@@ -38,15 +41,17 @@ cats = ("AGS","TRO","WWT","IDE","ENE","CHE")
 # IDE = Indirect emissions from NOx and NH3: 7B+7C / 5A
 # ENE = Energy, 1A1
 # CHE = Chemical processes 2B
+#cats = ['AGS']
+
 for i in cats:
     print(i,"of",cats)
     EDGAR_griddata = np.zeros((len(years),LAT.shape[0],LON.shape[1]))
     for n in range(0,years.shape[0]) :
         print(years[n])
         if (i == "ENE") | (i=="CHE"):
-            filename = "data/input_data/EDGAR/"+i+"_nc/v6.0_N2O_"+str(years[n])+"_"+i+".0.1x0.1.nc" 
+            filename = "../isotone-rawdata/EDGAR/"+i+"_nc/v6.0_N2O_"+str(years[n])+"_"+i+".0.1x0.1.nc" 
         else: 
-            filename = "data/input_data/EDGAR/"+i+"_nc/v50_N2O_"+str(years[n])+"_"+i+".0.1x0.1.nc"    
+            filename = "../isotone-rawdata/EDGAR/"+i+"_nc/v50_N2O_"+str(years[n])+"_"+i+".0.1x0.1.nc"    
         EDGAR = xr.open_dataset(filename)
         EDGAR_list = reducesize(lon = EDGAR.lon, lat = EDGAR.lat, arrdata = EDGAR.emi_n2o, Xred = 5) # reduce size and convert to list
         EDGAR_list[EDGAR_list[:,0]>179.5,0] = EDGAR_list[EDGAR_list[:,0]>179.5,0]-360
@@ -59,11 +64,11 @@ for i in cats:
 
 # plot if needed (last year)
 plot_map(LON,LAT,AGS_griddata[n,:,:],"AGS emissions (g N2O-N/m2/year): "+str(years[n]),filename="figs/input_data/EDGAR_AGS")
-plot_map(LON,LAT,TRO_griddata[n,:,:],"TRO emissions (g N2O-N/m2/year): "+str(years[n]),filename="figs/input_data/EDGAR_TRO")
-plot_map(LON,LAT,IDE_griddata[n,:,:],"IDE emissions (g N2O-N/m2/year): "+str(years[n]),filename="figs/input_data/EDGAR_IDE")
-plot_map(LON,LAT,WWT_griddata[n,:,:],"WWT emissions (g N2O-N/m2/year): "+str(years[n]),filename="figs/input_data/EDGAR_WWT")
-plot_map(LON,LAT,ENE_griddata[n,:,:],"ENE emissions (g N2O-N/m2/year): "+str(years[n]),filename="figs/input_data/EDGAR_ENE")
-plot_map(LON,LAT,CHE_griddata[n,:,:],"CHE emissions (g N2O-N/m2/year): "+str(years[n]),filename="figs/input_data/EDGAR_CHE")
+#plot_map(LON,LAT,TRO_griddata[n,:,:],"TRO emissions (g N2O-N/m2/year): "+str(years[n]),filename="figs/input_data/EDGAR_TRO")
+#plot_map(LON,LAT,IDE_griddata[n,:,:],"IDE emissions (g N2O-N/m2/year): "+str(years[n]),filename="figs/input_data/EDGAR_IDE")
+#plot_map(LON,LAT,WWT_griddata[n,:,:],"WWT emissions (g N2O-N/m2/year): "+str(years[n]),filename="figs/input_data/EDGAR_WWT")
+#plot_map(LON,LAT,ENE_griddata[n,:,:],"ENE emissions (g N2O-N/m2/year): "+str(years[n]),filename="figs/input_data/EDGAR_ENE")
+#plot_map(LON,LAT,CHE_griddata[n,:,:],"CHE emissions (g N2O-N/m2/year): "+str(years[n]),filename="figs/input_data/EDGAR_CHE")
 
 #%% Extrapolate each grid cell to 1850-2050
 
@@ -158,8 +163,8 @@ ncout.close()
 f = nc4.Dataset('data/EDGAR_data_extrap.nc','r')
 n = 100
 plot_map(LON,LAT,f.variables["AGS"][n,:,:],"AGS (g N2O-N/m2/year): "+str(f.variables["time"][n]))
-plot_map(LON,LAT,f.variables["TRO"][n,:,:],"TRO (g N2O-N/m2/year): "+str(f.variables["time"][n]))
-plot_map(LON,LAT,f.variables["IDE"][n,:,:],"IDE (g N2O-N/m2/year): "+str(f.variables["time"][n]))
-plot_map(LON,LAT,f.variables["WWT"][n,:,:],"WWT (g N2O-N/m2/year): "+str(f.variables["time"][n]))
-plot_map(LON,LAT,f.variables["CHE"][n,:,:],"CHE (g N2O-N/m2/year): "+str(f.variables["time"][n]))
-plot_map(LON,LAT,f.variables["ENE"][n,:,:],"ENE (g N2O-N/m2/year): "+str(f.variables["time"][n]))
+#plot_map(LON,LAT,f.variables["TRO"][n,:,:],"TRO (g N2O-N/m2/year): "+str(f.variables["time"][n]))
+#plot_map(LON,LAT,f.variables["IDE"][n,:,:],"IDE (g N2O-N/m2/year): "+str(f.variables["time"][n]))
+#plot_map(LON,LAT,f.variables["WWT"][n,:,:],"WWT (g N2O-N/m2/year): "+str(f.variables["time"][n]))
+#plot_map(LON,LAT,f.variables["CHE"][n,:,:],"CHE (g N2O-N/m2/year): "+str(f.variables["time"][n]))
+#plot_map(LON,LAT,f.variables["ENE"][n,:,:],"ENE (g N2O-N/m2/year): "+str(f.variables["time"][n]))

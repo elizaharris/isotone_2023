@@ -19,6 +19,9 @@ from datetime import datetime as dt
 import rasterio as rio
 import os
 from scipy.interpolate import griddata
+
+parentdir = os.getcwd()
+os.chdir(parentdir+"/isotone_arcticBranch") # Change to the isotone repo as working directory
 from src.utils import plot_map
 from src.utils import rast_to_list
 import configs as configs
