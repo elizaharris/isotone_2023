@@ -79,29 +79,28 @@ f = nc4.Dataset('data/fNH3_data.nc','r')
 fNH3_grid = f.variables["fNH3"][:,:]; plot_map(LON,LAT,fNH3_grid,"fNH3")
 
 # Import EDGAR gridded emission estimates, processed in src/regrid_EDGAR
-f = nc4.Dataset('data/largeData/EDGAR_data_extrap.nc','r')
-AGS_grid = f.variables["AGS"][:,:,:]; plot_map(LON,LAT,AGS_grid[150,:,:],"EDGAR agriculture (g N2O-N/m2/year): 2000")
-TRO_grid = f.variables["TRO"][:,:,:]; plot_map(LON,LAT,TRO_grid[150,:,:],"EDGAR transport (g N2O-N/m2/year): 2000")
-IDE_grid = f.variables["IDE"][:,:,:]; plot_map(LON,LAT,IDE_grid[150,:,:],"EDGAR indirect (g N2O-N/m2/year): 2000")
-WWT_grid = f.variables["WWT"][:,:,:]; plot_map(LON,LAT,WWT_grid[150,:,:],"EDGAR wastewater (g N2O-N/m2/year): 2000")
-CHE_grid = f.variables["IDE"][:,:,:]; plot_map(LON,LAT,CHE_grid[150,:,:],"EDGAR chem industry (g N2O-N/m2/year): 2000")
-ENE_grid = f.variables["WWT"][:,:,:]; plot_map(LON,LAT,ENE_grid[150,:,:],"EDGAR energy (g N2O-N/m2/year): 2000")
-
+cats = ("AGS","TRO","WWT","IDE","ENE","CHE")
+edgar_cat_dict = {"AGS": "EDGAR agriculture (g N2O-N/m2/year): 2000",
+                  "TRO": "EDGAR transport (g N2O-N/m2/year): 2000",
+                  "WWT": "EDGAR indirect (g N2O-N/m2/year): 2000",
+                  "IDE": "EDGAR indirect (g N2O-N/m2/year): 2000",
+                  "ENE": "EDGAR energy (g N2O-N/m2/year): 2000",
+                  "CHE": "EDGAR chem industry (g N2O-N/m2/year): 2000"}
+for c in cats:
+    exec("f = nc4.Dataset('data/largeData/EDGAR_data_extrap_"+c+".nc','r')")
+    exec(c+"_grid = f.variables['catdata'][:,:,:]")
+    filename="figs/input_data/EDGAR_"+c
+    exec("plot_map(LON,LAT,"+c+"_grid[150,:,:],edgar_cat_dict[c],filename=filename)")
+   
 # Import N inputs (fixation, deposition, fertilisation), processed in src/regrid_N_inputs
 Ninputs = nc4.Dataset('data/largeData/N_input_data.nc','r')
 datarange = Ninputs.variables["time"][:].data
 
 # Import T anomalies (annual, Hadley centre), processed in src/regrid_T_anomalies
-Tanom = nc4.Dataset('data/largeData/Tanom_data.nc','r')
-# Normalise to the beginning year, so that we have T anomalies relative to the first model year
-Tnorm = np.zeros(Tanom.variables["Tanom"].shape)
-Tstart = Tanom.variables["Tanom"][0,:,:].data
-Tstart[np.isnan(Tstart)] = 0
-for n in range(0,len(Tanom.variables["time"])) :
-    Tnorm[n,:,:] = Tanom.variables["Tanom"][n,:,:].data - Tstart
-    Tnorm[np.isnan(Tnorm)] = 0 
-plot_map(LON,LAT,Tnorm[150,:,:],"Temp anomaly: "+str(Tanom.variables["time"][150]),filename="figs/input_data/T_anomalies_norm")
-mean_T_rise = np.nanmean(np.nanmean(Tnorm,axis=1),axis=1)
+Tanom_full = nc4.Dataset('data/largeData/Tanom_data.nc','r')
+Tnorm = Tanom_full.variables["Tnorm"][:,:,:].data
+plot_map(LON,LAT,Tnorm[150,:,:],"Temp anomaly: "+str(Tanom_full.variables["time"][150]),filename="figs/input_data/T_anomalies_norm")
+mean_T_rise = Tanom_full.variables["mean_T_rise"][:].data
 
 #%% Observational data for model comparison
 
@@ -229,3 +228,5 @@ SP_prea = [19.05,2.0]
 d15_ocean = [5.1,1.9] # del values for the ocean source, from Schilt et al.
 d18_ocean = [44.8,3.6] # del values for the ocean source, from Schilt et al.
 SP_ocean = [15.8,7.1] # SP values from Snider dataset ("marine")
+
+

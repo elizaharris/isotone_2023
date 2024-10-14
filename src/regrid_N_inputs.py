@@ -20,6 +20,9 @@ import cartopy.crs as ccrs
 from datetime import datetime as dt
 from scipy.interpolate import griddata
 import os
+
+parentdir = os.getcwd()
+os.chdir(parentdir+"/isotone_arcticBranch") # Change to the isotone repo as working directory
 from src.utils import plot_map, nc_to_list
 import configs as configs
 
@@ -138,7 +141,7 @@ plot_map(LON,LAT,fert_griddata[n,:,:],"N fertilization (g N/m2/year): "+str(year
 
 import netCDF4 as nc4
 
-ncout = nc4.Dataset('data/N_input_data.nc','w','NETCDF4'); # using netCDF3 for output format 
+ncout = nc4.Dataset('data/largeData/N_input_data.nc','w','NETCDF4'); # using netCDF3 for output format 
 ncout.createDimension('lon',LON.shape[1])
 ncout.createDimension('lat',LAT.shape[0])
 ncout.createDimension('time',len(years))
@@ -166,7 +169,7 @@ fixation[:,:,:] = fix_griddata[:,:,:]
 ncout.close()
 
 # test the file!
-f = nc4.Dataset('data/N_input_data.nc','r')
+f = nc4.Dataset('data/largeData/N_input_data.nc','r')
 plot_map(LON,LAT,f.variables["fertilisation"][n,:,:],"N fertilization (g N/m2/year): "+str(f.variables["time"][n]))
 plot_map(LON,LAT,f.variables["deposition"][n,:,:],"N deposition (g N/m2/year): "+str(f.variables["time"][n]))
 plot_map(LON,LAT,f.variables["fixation"][n,:,:],"N fixation (g N/m2/year): "+str(f.variables["time"][n]))

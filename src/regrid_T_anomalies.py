@@ -19,6 +19,9 @@ from datetime import datetime as dt
 import rasterio as rio
 from scipy.interpolate import griddata
 import os
+
+parentdir = os.getcwd()
+os.chdir(parentdir+"/isotone_arcticBranch") # Change to the isotone repo as working directory
 from src.utils import plot_map, reducesize, nc_to_list
 import configs as configs
 
@@ -53,11 +56,22 @@ for n in range(0,years.shape[0]) :
 plt.contourf(data_mean)
 plot_map(LON,LAT,Tanom_griddata[n,:,:],"T anomaly: "+str(years[n]),filename="figs/input_data/T_anomalies")
 
+# Normalise to the beginning year, so that we have T anomalies relative to the first model year
+Tnorm_griddata = np.zeros(Tanom_griddata.shape)
+Tstart = Tanom_griddata[0,:,:]
+Tstart[np.isnan(Tstart)] = 0
+for n in range(0,len(years)) :
+    print(years[n])    
+    Tnorm_griddata[n,:,:] = Tanom_griddata[n,:,:] - Tstart
+    Tnorm_griddata[np.isnan(Tnorm_griddata)] = 0 
+plot_map(LON,LAT,Tnorm_griddata[150,:,:],"Temp anomaly: "+str(years[150]),filename="figs/input_data/T_anomalies_norm")
+mean_T_rise = np.nanmean(np.nanmean(Tnorm_griddata,axis=1),axis=1)
+
 #%% save the data as a netcdf file
 
 import netCDF4 as nc4
 
-ncout = nc4.Dataset('data/Tanom_data.nc','w','NETCDF4'); # using netCDF3 for output format 
+ncout = nc4.Dataset('data/largeData/Tanom_data.nc','w','NETCDF4'); # using netCDF3 for output format 
 ncout.createDimension('lon',LON.shape[1])
 ncout.createDimension('lat',LAT.shape[0])
 ncout.createDimension('time',len(years))
@@ -74,8 +88,21 @@ Tanom = ncout.createVariable('Tanom','f4',('time','lat','lon'))
 Tanom.setncattr('units','degC')
 Tanom.setncattr('source','Hadley centre temperature anomalies')
 Tanom[:,:,:] = Tanom_griddata[:,:,:]
+Tnorm = ncout.createVariable('Tnorm','f4',('time','lat','lon'))
+Tnorm.setncattr('units','degC')
+Tnorm.setncattr('source','Hadley centre temperature anomalies, normalised to T in start year')
+Tnorm[:,:,:] = Tnorm_griddata[:,:,:]
+T_rise = ncout.createVariable('mean_T_rise','f4',('time'))
+T_rise.setncattr('units','degC')
+T_rise.setncattr('source','Hadley centre temperature anomalies, mean per year across grid cells (not weighted by size)')
+T_rise[:] = mean_T_rise[:]
 ncout.close()
 
 # test the file!
-f = nc4.Dataset('data/Tanom_data.nc','r')
+f = nc4.Dataset('data/largeData/Tanom_data.nc','r')
 plot_map(LON,LAT,f.variables["Tanom"][n,:,:],"Temp anomaly: "+str(f.variables["time"][5]))
+plot_map(LON,LAT,f.variables["Tnorm"][n,:,:],"Temp anomaly: "+str(f.variables["time"][5]))
+fig, ax = plt.subplots(1,1)
+plt.plot(years,f.variables["mean_T_rise"][:],"o")
+plt.show()
+plt.close("all")

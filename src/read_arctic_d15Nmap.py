@@ -65,7 +65,7 @@ arctic_mask_coarse = arctic_d15N_coarsegrid/arctic_d15N_coarsegrid
 
 import netCDF4 as nc4
 
-ncout = nc4.Dataset('data/arctic_d15N_data.nc','w','NETCDF4'); # using netCDF3 for output format 
+ncout = nc4.Dataset('data/largeData/arctic_d15N_data.nc','w','NETCDF4'); # using netCDF3 for output format 
 # Save high res
 ncout.createDimension('lon',LON.shape[1])
 ncout.createDimension('lat',LAT.shape[0])
