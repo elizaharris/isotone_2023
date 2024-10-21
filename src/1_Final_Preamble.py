@@ -97,10 +97,10 @@ Ninputs = nc4.Dataset('data/largeData/N_input_data.nc','r')
 datarange = Ninputs.variables["time"][:].data
 
 # Import T anomalies (annual, Hadley centre), processed in src/regrid_T_anomalies
-Tanom_full = nc4.Dataset('data/largeData/Tanom_data.nc','r')
-Tnorm = Tanom_full.variables["Tnorm"][:,:,:].data
-plot_map(LON,LAT,Tnorm[150,:,:],"Temp anomaly: "+str(Tanom_full.variables["time"][150]),filename="figs/input_data/T_anomalies_norm")
-mean_T_rise = Tanom_full.variables["mean_T_rise"][:].data
+Tanom = nc4.Dataset('data/largeData/Tanom_data.nc','r')
+Tnorm = Tanom.variables["Tnorm"][:,:,:].data
+plot_map(LON,LAT,Tnorm[150,:,:],"Normalised temp anomaly: "+str(Tanom.variables["time"][150]),filename="figs/input_data/T_anomalies_norm")
+mean_T_rise = Tanom.variables["mean_T_rise"][:].data
 
 #%% Observational data for model comparison
 
@@ -109,53 +109,54 @@ mean_T_rise = Tanom_full.variables["mean_T_rise"][:].data
 N2O_atmos = pd.read_csv("data/atmos_data/SummAtmosData.csv", sep=',') 
 
 # flux data from Chris Dorich, divided into climate regions
-N2O_fluxes = pd.read_csv("data/N2O_ChrisDorich/globaln2o_sites_filled.csv")
-# cut to: MAT, MAP, BulkD, C, N, pH, lat, lon, flux, flux_se, EF, fert rate for easy comparison
-# fix NAs and string values also
-def fix_nas(data,NA_value): # function to make different nans to true nans
-    for n in range(0,len(NA_value)):
-        tmp = np.where(new == NA_value[n])
-        data[tmp] = np.nan
-    return(data)
-def fix_strings(data,chars):
-    for n in range(0,len(chars)):
-        tmp = np.where(np.char.find(data.astype("str"),chars[n])!=-1)
-        data[tmp] = np.nan
-    return(data)
-N2O_flux_params = (("Temp_C","Precip_mm","Soil_BD_gcm3","Soil_SOC_perc","Soil_SON_perc","pH","Lat","Long",'N2O_kgN2O-N_ha', 'N2O_se_kgN2O-N_ha',"EF",'N_App_Rate_kgN_ha'))
-N2O_fluxes_short = np.array(N2O_fluxes[N2O_flux_params[0]])
-for n in range(1,len(N2O_flux_params)):
-    new = np.array(N2O_fluxes[N2O_flux_params[n]])
-    new = fix_nas(new,("*","na","nan"))
-    new = fix_strings(new,(">","-"))
-    new = new.astype(np.float64)
-    N2O_fluxes_short = np.vstack((N2O_fluxes_short,new))
-N2O_fluxes_short = N2O_fluxes_short.transpose()
-tmp = np.where(~np.isnan(N2O_fluxes_short[:,8])) # Flux is NA here...
-# Match the anc data to each flux point
-flux_ancdata = np.zeros((N2O_fluxes.shape[0],8))*np.nan # MAT, MAP, BulkD, C, N, pH, AI, d15N
-for n in range(0,N2O_fluxes.shape[0]):
-    if (~np.isnan(N2O_fluxes["Lat"][n])) & (~np.isnan(N2O_fluxes["Long"][n])):
-        r = np.where(np.nanmin(abs(LAT[:,0] - N2O_fluxes["Lat"][n])) == abs(LAT[:,0] - N2O_fluxes["Lat"][n])) # match flux lat long to gridcells
-        c = np.where(np.nanmin(abs(LON[0,:] - N2O_fluxes["Long"][n])) == abs(LON[0,:] - N2O_fluxes["Long"][n]))
-        if len(r[0])>1: r=r[0][0] # if two grid cells match lat/lon equally, take first
-        if len(c[0])>1: c=c[0][0]
-        flux_ancdata[n,0] = MAT_grid[r,c]
-        flux_ancdata[n,1] = MAP_grid[r,c]
-        flux_ancdata[n,2] = BulkD_grid[r,c]
-        flux_ancdata[n,3] = C_grid[r,c]/10 # change to %
-        flux_ancdata[n,4] = N_grid[r,c]/10 # change to %
-        flux_ancdata[n,5] = pH_grid[r,c]
-        flux_ancdata[n,6] = AI_grid[r,c]
-        flux_ancdata[n,7] = d15N_grid[r,c]
-N2O_fluxes_short = N2O_fluxes_short[tmp[0],:]
-flux_ancdata = flux_ancdata[tmp[0],:]
-# calc mean EFs by climate zone      
-### If this changes, edit analogous function for model data in 3_Final_RunMCMC!
-N2O_fluxes_zones = climzone_means(var1_grid = MAT_grid, var2_grid = MAP_grid, datavar1 = flux_ancdata[:,0],
-                                  datavar2 = flux_ancdata[:,1],data = N2O_fluxes_short[:,10],LON=LON,LAT=LAT,bins=4,plotfigs="Y")
-# final output
-print(str(N2O_fluxes_short.shape[0])+" flux measurements from "+str(len(set(N2O_fluxes["Location"][tmp[0]])))+" locations")
+if 0: # Don't run this at the moment; should have Arctic fluxes, and matching this detailed grid is too slow
+    N2O_fluxes = pd.read_csv("data/N2O_ChrisDorich/globaln2o_sites_filled.csv")
+    # cut to: MAT, MAP, BulkD, C, N, pH, lat, lon, flux, flux_se, EF, fert rate for easy comparison
+    # fix NAs and string values also
+    def fix_nas(data,NA_value): # function to make different nans to true nans
+        for n in range(0,len(NA_value)):
+            tmp = np.where(new == NA_value[n])
+            data[tmp] = np.nan
+        return(data)
+    def fix_strings(data,chars):
+        for n in range(0,len(chars)):
+            tmp = np.where(np.char.find(data.astype("str"),chars[n])!=-1)
+            data[tmp] = np.nan
+        return(data)
+    N2O_flux_params = (("Temp_C","Precip_mm","Soil_BD_gcm3","Soil_SOC_perc","Soil_SON_perc","pH","Lat","Long",'N2O_kgN2O-N_ha', 'N2O_se_kgN2O-N_ha',"EF",'N_App_Rate_kgN_ha'))
+    N2O_fluxes_short = np.array(N2O_fluxes[N2O_flux_params[0]])
+    for n in range(1,len(N2O_flux_params)):
+        new = np.array(N2O_fluxes[N2O_flux_params[n]])
+        new = fix_nas(new,("*","na","nan"))
+        new = fix_strings(new,(">","-"))
+        new = new.astype(np.float64)
+        N2O_fluxes_short = np.vstack((N2O_fluxes_short,new))
+    N2O_fluxes_short = N2O_fluxes_short.transpose()
+    tmp = np.where(~np.isnan(N2O_fluxes_short[:,8])) # Flux is NA here...
+    # Match the anc data to each flux point
+    flux_ancdata = np.zeros((N2O_fluxes.shape[0],8))*np.nan # MAT, MAP, BulkD, C, N, pH, AI, d15N
+    for n in range(0,N2O_fluxes.shape[0]):
+        if (~np.isnan(N2O_fluxes["Lat"][n])) & (~np.isnan(N2O_fluxes["Long"][n])):
+            r = np.where(np.nanmin(abs(LAT[:,0] - N2O_fluxes["Lat"][n])) == abs(LAT[:,0] - N2O_fluxes["Lat"][n])) # match flux lat long to gridcells
+            c = np.where(np.nanmin(abs(LON[0,:] - N2O_fluxes["Long"][n])) == abs(LON[0,:] - N2O_fluxes["Long"][n]))
+            if len(r[0])>1: r=r[0][0] # if two grid cells match lat/lon equally, take first
+            if len(c[0])>1: c=c[0][0]
+            flux_ancdata[n,0] = MAT_grid[r,c]
+            flux_ancdata[n,1] = MAP_grid[r,c]
+            flux_ancdata[n,2] = BulkD_grid[r,c]
+            flux_ancdata[n,3] = C_grid[r,c]/10 # change to %
+            flux_ancdata[n,4] = N_grid[r,c]/10 # change to %
+            flux_ancdata[n,5] = pH_grid[r,c]
+            flux_ancdata[n,6] = AI_grid[r,c]
+            flux_ancdata[n,7] = d15N_grid[r,c]
+    N2O_fluxes_short = N2O_fluxes_short[tmp[0],:]
+    flux_ancdata = flux_ancdata[tmp[0],:]
+    # calc mean EFs by climate zone      
+    ### If this changes, edit analogous function for model data in 3_Final_RunMCMC!
+    N2O_fluxes_zones = climzone_means(var1_grid = MAT_grid, var2_grid = MAP_grid, datavar1 = flux_ancdata[:,0],
+                                    datavar2 = flux_ancdata[:,1],data = N2O_fluxes_short[:,10],LON=LON,LAT=LAT,bins=4,plotfigs="Y")
+    # final output
+    print(str(N2O_fluxes_short.shape[0])+" flux measurements from "+str(len(set(N2O_fluxes["Location"][tmp[0]])))+" locations")
 
 #%% Collect input variables that may be optimised
  

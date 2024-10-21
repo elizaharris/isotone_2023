@@ -25,7 +25,7 @@ def prob_g(x,x0,sigma):
 
 # define function for plotting    
 def plot_map(longi,lati,gridval,title="title",vminmax=(np.nan,np.nan),cmap="viridis",filename="figs/testfig") :
-    fig = plt.figure(figsize=(8,4))
+    fig = plt.figure(figsize=(12,6))
     ax = fig.add_subplot(1,1,1,projection=ccrs.PlateCarree())
     ax.coastlines()
     ax.set_title(title)
