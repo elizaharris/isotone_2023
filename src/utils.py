@@ -106,8 +106,8 @@ def rast_to_list(rastdata,Xred,takemean="Y",dataclip="N") :
         if n % 100 == 0: 
             print("n = "+str(n)+"(total = "+str(arrdata.shape[0]/Xred)+")")
         for i in range(0,round(arrdata.shape[1]/Xred)) :
-            if i % 100 == 0: 
-                print("n = "+str(n)+"; i = "+str(i)+" (total = "+str(arrdata.shape[0]/Xred)+","+str(arrdata.shape[1]/Xred)+")")
+            #if i % 100 == 0: 
+                #print("n = "+str(n)+"; i = "+str(i)+" (total = "+str(arrdata.shape[0]/Xred)+","+str(arrdata.shape[1]/Xred)+")")
             nmid = int(n*Xred+Xred/2)
             imid = int(i*Xred+Xred/2)
             tmp = rio.transform.TransformMethodsMixin.xy(rastdata,nmid,imid)
@@ -125,6 +125,14 @@ def rast_to_list(rastdata,Xred,takemean="Y",dataclip="N") :
 
 # function to transform to a list of lon, lat, values and average every X points
 def nc_to_list(loni,lati,data) :
+    output = np.zeros((loni.shape[0]*lati.shape[0],3))
+    output[:,0] = np.tile(loni,lati.shape[0])
+    output[:,1] = np.repeat(lati,loni.shape[0])
+    output[:,2] = data.flatten()
+    return output
+
+# function to transform to a list of lon, lat, values and average every X points
+def grid_to_list(loni,lati,data) :
     output = np.zeros((loni.shape[0]*lati.shape[0],3))
     output[:,0] = np.tile(loni,lati.shape[0])
     output[:,1] = np.repeat(lati,loni.shape[0])

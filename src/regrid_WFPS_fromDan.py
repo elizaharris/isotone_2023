@@ -73,18 +73,35 @@ wfps_007 = np.zeros((wfps_grid.shape[0],wfps_grid.shape[1],nyears))*np.nan
 for n,s in enumerate(wfps_filenames_007):
     print(s)
     wfps_rast = rio.open("../isotone-rawdata/wfps_0-7cm/"+s)
-    wfps_list = rast_to_list(wfps_rast,5,dataclip=(0,np.inf),takemean="N") # data as list
+    wfps_list = rast_to_list(wfps_rast,2,dataclip=(0,np.inf),takemean="N") # data as list 
     wfps_grid = griddata((wfps_list[:,0],wfps_list[:,1]), wfps_list[:,2], (LON,LAT), method='linear')
     wfps_007[:,:,n] = wfps_grid
     if years[n]==2020:
         plot_map(LON,LAT,wfps_007[:,:,n],title="wfps",filename="figs/input_data/wfps_0-7cm_2020")
-wfps_007_mean = np.nanmean(wfps_007,axis=1)
+wfps_007_mean = np.nanmean(wfps_007,axis=2)
+plot_map(LON,LAT,wfps_007_mean,title="wfps",filename="figs/input_data/wfps_0-7cm_mean")
+
+wfps_728 = np.zeros((wfps_grid.shape[0],wfps_grid.shape[1],nyears))*np.nan
+for n,s in enumerate(wfps_filenames_728):
+    print(s)
+    wfps_rast = rio.open("../isotone-rawdata/wfps_7-28cm/"+s)
+    wfps_list = rast_to_list(wfps_rast,2,dataclip=(0,np.inf),takemean="N") # data as list 
+    wfps_grid = griddata((wfps_list[:,0],wfps_list[:,1]), wfps_list[:,2], (LON,LAT), method='linear')
+    wfps_728[:,:,n] = wfps_grid
+    if years[n]==2020:
+        plot_map(LON,LAT,wfps_728[:,:,n],title="wfps",filename="figs/input_data/wfps_7-28cm_2020")
+wfps_728_mean = np.nanmean(wfps_728,axis=2)
+plot_map(LON,LAT,wfps_728_mean,title="wfps",filename="figs/input_data/wfps_7-28cm_mean")
+
+plot_map(LON,LAT,wfps_007_mean-wfps_728_mean,title="wfps, surface - depth (difference)",filename="figs/input_data/wfps_surface-depth")
+wfps_mean = (wfps_007_mean+3*wfps_728_mean)/4 # mean, weighted by depth span
+plot_map(LON,LAT,wfps_mean,title="wfps",filename="figs/input_data/wfps_new_mean")
 
 #%% Save each year of the data as a netcdf file
 
 import netCDF4 as nc4
 
-ncout = nc4.Dataset('data/wfps_new_data.nc','w','NETCDF4'); # using netCDF3 for output format 
+ncout = nc4.Dataset('data/largeData/wfps_new_data.nc','w','NETCDF4'); # using netCDF3 for output format 
 ncout.createDimension('lon',LON.shape[1])
 ncout.createDimension('lat',LAT.shape[0])
 ncout.createDimension('year',nyears)
@@ -97,12 +114,24 @@ latvar.setncattr('units','degrees north')
 yearvar = ncout.createVariable('year','f4',('year'))
 yearvar[:] = years
 yearvar.setncattr('units','year')
-wfps = ncout.createVariable('wfps','f4',('lat','lon','year'))
-wfps.setncattr('units','percentage')
-wfps[:,:,:] = wfps_007[:,:]
+wfps_007var = ncout.createVariable('wfps_007','f4',('lat','lon','year'))
+wfps_007var.setncattr('units','percentage (0-7 cm)')
+wfps_007var[:,:,:] = wfps_007[:,:]
+wfps_728var = ncout.createVariable('wfps_728','f4',('lat','lon','year'))
+wfps_728var.setncattr('units','percentage (7-28 cm)')
+wfps_728var[:,:,:] = wfps_728[:,:]
+wfps_mean007var = ncout.createVariable('wfps_mean007','f4',('lat','lon'))
+wfps_mean007var.setncattr('units','percentage (0-7 cm), mean')
+wfps_mean007var[:,:] = wfps_007_mean[:,:]
+wfps_mean728var = ncout.createVariable('wfps_mean728','f4',('lat','lon'))
+wfps_mean728var.setncattr('units','percentage (7-28 cm), mean')
+wfps_mean728var[:,:] = wfps_728_mean[:,:]
+wfps_meanvar = ncout.createVariable('wfps_mean','f4',('lat','lon'))
+wfps_meanvar.setncattr('units','percentage (0-28 cm), mean')
+wfps_meanvar[:,:] = wfps_mean[:,:]
 ncout.close()
 
 # test the file!
 f = nc4.Dataset('data/wfps_new_data.nc','r')
-plot_map(LON,LAT,f.variables["wfps"][:,:,0],"wfps")
-plot_map(LON,LAT,f.variables["wfps"][:,:,20],"wfps")
+plot_map(LON,LAT,f.variables["wfps_mean"][:,:],"wfps mean")
+plot_map(LON,LAT,f.variables["wfps_007"][:,:,20],"wfps")
