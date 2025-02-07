@@ -1,0 +1,2 @@
+*wfps_new_data.nc filter=lfs diff=lfs merge=lfs -text
+data/wfps_new_data.nc filter=lfs diff=lfs merge=lfs -text
