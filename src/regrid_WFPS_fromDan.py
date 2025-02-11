@@ -38,6 +38,7 @@ lon_out = np.arange(configs.res["lonstart"], configs.res["lonend"], configs.res[
     
 wfps_rast = rio.open("../isotone-rawdata/wfps_0-7cm/wfps0007_globalmap_2020.tif")
 wfps_list = rast_to_list(wfps_rast,5,dataclip=(0,np.inf),takemean="N") # data as list
+### For some reason, using less than 5 here gives lines in the output
 # regrid the data from 1D back to 2D and to a rougher grid (too many values for now otherwise)
 wfps_grid = griddata((wfps_list[:,0],wfps_list[:,1]), wfps_list[:,2], (LON,LAT), method='linear')
 # wfps_grid = (wfps_grid).clip(0,100)*ocean_mask # not needed
@@ -132,6 +133,6 @@ wfps_meanvar[:,:] = wfps_mean[:,:]
 ncout.close()
 
 # test the file!
-f = nc4.Dataset('data/wfps_new_data.nc','r')
+f = nc4.Dataset('data/largeData/wfps_new_data.nc','r')
 plot_map(LON,LAT,f.variables["wfps_mean"][:,:],"wfps mean")
 plot_map(LON,LAT,f.variables["wfps_007"][:,:,20],"wfps")
