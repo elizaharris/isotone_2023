@@ -10,33 +10,33 @@ Run after "FullModel.." and "Read_MCMC.." to generate final figures
 
 #%% Run the final model with full results
 post = params_post[:,0]
-fullmod_post = model(post,fullres="Y")
+fullmod_post = model(post,preamble,fullres="Y")
 prior = params[:,0]
-fullmod_prior = model(prior,fullres="Y")
+fullmod_prior = model(prior,preamble,fullres="Y")
 
 # unpack the posterior results
 soilmodres = fullmod_post[3]
 N_processes_vec = fullmod_post[4]
-k_L_post = np.zeros(d15N_grid.shape)+np.nan; k_L_post[datarng] = soilmodres[:,0]
-k_G_post = np.zeros(d15N_grid.shape)+np.nan; k_G_post[datarng] = soilmodres[:,2]
-f_denit_post = np.zeros(d15N_grid.shape)+np.nan; f_denit_post[datarng] = N_processes_vec[:,3]
-f_N2O_post = np.zeros(d15N_grid.shape)+np.nan; f_N2O_post[datarng] = N_processes_vec[:,0]
-f_N2_post = np.zeros(d15N_grid.shape)+np.nan; f_N2_post[datarng] = N_processes_vec[:,1]
-f_NO_post = np.zeros(d15N_grid.shape)+np.nan; f_NO_post[datarng] = N_processes_vec[:,2]
-d15N_modoutput_post = np.zeros(d15N_grid.shape)+np.nan; d15N_modoutput_post[datarng] = soilmodres[:,3]
-N2O_d15N_post = np.zeros(d15N_grid.shape)+np.nan; N2O_d15N_post[datarng] = soilmodres[:,4]
-N2O_SP_post = np.zeros(d15N_grid.shape)+np.nan; N2O_SP_post[datarng] = soilmodres[:,5]
+k_L_post = np.zeros(preamble.d15N_grid.shape)+np.nan; k_L_post[datarng] = soilmodres[:,0]
+k_G_post = np.zeros(preamble.d15N_grid.shape)+np.nan; k_G_post[datarng] = soilmodres[:,2]
+f_denit_post = np.zeros(preamble.d15N_grid.shape)+np.nan; f_denit_post[datarng] = N_processes_vec[:,3]
+f_N2O_post = np.zeros(preamble.d15N_grid.shape)+np.nan; f_N2O_post[datarng] = N_processes_vec[:,0]
+f_N2_post = np.zeros(preamble.d15N_grid.shape)+np.nan; f_N2_post[datarng] = N_processes_vec[:,1]
+f_NO_post = np.zeros(preamble.d15N_grid.shape)+np.nan; f_NO_post[datarng] = N_processes_vec[:,2]
+d15N_modoutput_post = np.zeros(preamble.d15N_grid.shape)+np.nan; d15N_modoutput_post[datarng] = soilmodres[:,3]
+N2O_d15N_post = np.zeros(preamble.d15N_grid.shape)+np.nan; N2O_d15N_post[datarng] = soilmodres[:,4]
+N2O_SP_post = np.zeros(preamble.d15N_grid.shape)+np.nan; N2O_SP_post[datarng] = soilmodres[:,5]
 
 # unpack the prior results
 soilmodres = fullmod_prior[3]
 N_processes_vec = fullmod_prior[4]
-k_L_prior = np.zeros(d15N_grid.shape)+np.nan; k_L_prior[datarng] = soilmodres[:,0]
-k_G_prior = np.zeros(d15N_grid.shape)+np.nan; k_G_prior[datarng] = soilmodres[:,2]
-f_denit_prior = np.zeros(d15N_grid.shape)+np.nan; f_denit_prior[datarng] = N_processes_vec[:,3]
-f_N2O_prior = np.zeros(d15N_grid.shape)+np.nan; f_N2O_prior[datarng] = N_processes_vec[:,0]
-d15N_modoutput_prior = np.zeros(d15N_grid.shape)+np.nan; d15N_modoutput_prior[datarng] = soilmodres[:,3]
-N2O_d15N_prior = np.zeros(d15N_grid.shape)+np.nan; N2O_d15N_prior[datarng] = soilmodres[:,4]
-N2O_SP_prior = np.zeros(d15N_grid.shape)+np.nan; N2O_SP_prior[datarng] = soilmodres[:,5]
+k_L_prior = np.zeros(preamble.d15N_grid.shape)+np.nan; k_L_prior[datarng] = soilmodres[:,0]
+k_G_prior = np.zeros(preamble.d15N_grid.shape)+np.nan; k_G_prior[datarng] = soilmodres[:,2]
+f_denit_prior = np.zeros(preamble.d15N_grid.shape)+np.nan; f_denit_prior[datarng] = N_processes_vec[:,3]
+f_N2O_prior = np.zeros(preamble.d15N_grid.shape)+np.nan; f_N2O_prior[datarng] = N_processes_vec[:,0]
+d15N_modoutput_prior = np.zeros(preamble.d15N_grid.shape)+np.nan; d15N_modoutput_prior[datarng] = soilmodres[:,3]
+N2O_d15N_prior = np.zeros(preamble.d15N_grid.shape)+np.nan; N2O_d15N_prior[datarng] = soilmodres[:,4]
+N2O_SP_prior = np.zeros(preamble.d15N_grid.shape)+np.nan; N2O_SP_prior[datarng] = soilmodres[:,5]
 
 # N input mod results
 N_summary = fullmod_post[5]
@@ -47,19 +47,19 @@ N_summary_full = fullmod_post[6]
 # 13-18: NH3 fert dep fix, leach fert dep fix
 
 #%% basics
-plot_map(LON,LAT,k_G_post*100,"fraction of Nr lost to microbial gas production, post",filename="figs/202502_NewWFPS/f_gas_map")
-plot_map(LON,LAT,k_G_post*f_N2O_post*100,"fraction of Nr lost to N2O, post",filename="figs/202502_NewWFPS/f_n2o_map")
-plot_map(LON,LAT,k_G_prior*100,"fraction of Nr lost to microbial gas production, post",filename="figs/202502_NewWFPS/f_gas_map_prior")
-plot_map(LON,LAT,k_G_prior*f_N2O_prior*100,"fraction of Nr lost to N2O, post",filename="figs/202502_NewWFPS/f_n2o_map_prior")
+utils.plot_map(preamble.LON,preamble.LAT,k_G_post*100,"fraction of Nr lost to microbial gas production, post",filename="figs/202502_NewWFPS/f_gas_map",show=1)
+utils.plot_map(preamble.LON,preamble.LAT,k_G_post*f_N2O_post*100,"fraction of Nr lost to N2O, post",filename="figs/202502_NewWFPS/f_n2o_map",show=1)
+utils.plot_map(preamble.LON,preamble.LAT,k_G_prior*100,"fraction of Nr lost to microbial gas production, post",filename="figs/202502_NewWFPS/f_gas_map_prior",show=1)
+utils.plot_map(preamble.LON,preamble.LAT,k_G_prior*f_N2O_prior*100,"fraction of Nr lost to N2O, post",filename="figs/202502_NewWFPS/f_n2o_map_prior",show=1)
 
 # global EF
-factor_area = (area_grid/1000/1000/1000/1000)
-print("Mean EF = "+str(round(np.nansum(k_G_post*f_N2O_post*factor_area)/np.nansum(factor_area)*100,2))+"%")
-print("Mean global EF = "+str(round(np.nansum(k_G_prior*f_N2O_prior*factor_area)/np.nansum(factor_area)*100,2))+"% (prior)")
+factor_area = (preamble.area_grid/1000/1000/1000/1000)
+print("Mean Arctic EF = "+str(round(np.nansum(k_G_post*f_N2O_post*factor_area)/np.nansum(factor_area)*100,2))+"%")
+print("Mean Arctic EF = "+str(round(np.nansum(k_G_prior*f_N2O_prior*factor_area)/np.nansum(factor_area)*100,2))+"% (prior)")
 # global EF for inputs
 y = N_summary[:,0] == 2022
-print("Effective global EF = "+str(N_summary[y,1]/np.sum(N_summary_full[y,1:4])*100)+"%")
-print("Effective global EF = "+str(fullmod_prior[5][y,1]/np.sum(fullmod_prior[6][y,1:4])*100)+"% (prior)")
+print("Effective Arctic global EF = "+str(N_summary[y,1]/np.sum(N_summary_full[y,1:4])*100)+"%")
+print("Effective Arctic global EF = "+str(fullmod_prior[5][y,1]/np.sum(fullmod_prior[6][y,1:4])*100)+"% (prior)")
 # Total permafrost emissions
 print("Terrestrial N2O emissions in TgN y-1: 1800 for clim. sens., 1.03 for NH Permafrost from Voigt et al.")
 print("My results: 1860 = "+str(N_summary[N_summary[:,0] == 1860,1])+"; 2010 = "+str(N_summary[N_summary[:,0] == 2010,1]))
@@ -75,40 +75,33 @@ plt.plot(N_summary[:,0],N_summary[:,4],"-.",label="fix")
 plt.ylabel("N2O emissions (Tg N2O-N a-1)")
 plt.legend()
 fig.tight_layout()
-plt.savefig("figs/202410_FirstRuns/total_cat_emissions.png") 
-plt.savefig("figs/202410_FirstRuns/total_cat_emissions.pdf") 
+plt.savefig("figs/202502_NewWFPS/total_cat_emissions.png") 
+plt.savefig("figs/202502_NewWFPS/total_cat_emissions.pdf") 
 fig.show() 
 
-# Emission map (post)
-y = 2022
-# get T sens
-tindex = int(np.where(abs(Tanom.variables["time"][:]-y) == np.min(abs(Tanom.variables["time"][:]-y)))[0])
-tanomaly = Tnorm[tindex,:,:]
-tanomaly_sens = (post[4]-1)*tanomaly + 1
-# get data (g m-2 y-1)
-index = np.where(Ninputs.variables["time"][:].data == y)[0] # select the year
-fix = ( Ninputs.variables["fixation"][index,:,:].data *tanomaly_sens )[0,:,:]
-dep = ( Ninputs.variables["deposition"][index,:,:].data *tanomaly_sens  )[0,:,:]
-fert = ( Ninputs.variables["fertilisation"][index,:,:].data *tanomaly_sens *post[3] )[0,:,:]
-total = fix + dep + fert
+# Get map of emissions for a certain year
+def getmap(y,preamble,post,k_G_post,f_N2O_post):
+    y = 2022
+    # get T sens
+    tindex = int(np.where(abs(preamble.Tanom.variables["time"][:]-y) == np.min(abs(preamble.Tanom.variables["time"][:]-y)))[0])
+    tanomaly = preamble.Tnorm[tindex,:,:]
+    tanomaly_sens = (post[4]-1)*tanomaly + 1
+    # get N input data (g m-2 y-1)
+    index = np.where(preamble.Ninputs.variables["time"][:].data == y)[0] # select the year
+    fix = ( preamble.Ninputs.variables["fixation"][index,:,:].data *tanomaly_sens )[0,:,:]
+    dep = ( preamble.Ninputs.variables["deposition"][index,:,:].data *tanomaly_sens  )[0,:,:]
+    fert = ( preamble.Ninputs.variables["fertilisation"][index,:,:].data *tanomaly_sens *post[3] )[0,:,:]
+    total = fix + dep + fert
+    n2o_total = k_G_post*f_N2O_post*total
+    return(n2o_total, fix, dep, fert)
+emissions_2022, _, _, _ = getmap(2022,preamble,post,k_G_post,f_N2O_post)
+emissions_1800, _, _, _ = getmap(1800,preamble,post,k_G_post,f_N2O_post)
 
-y = 1850
-# get T sens
-tindex = int(np.where(abs(Tanom.variables["time"][:]-y) == np.min(abs(Tanom.variables["time"][:]-y)))[0])
-tanomaly = Tnorm[tindex,:,:]
-tanomaly_sens = (post[4]-1)*tanomaly + 1
-# get data (g m-2 y-1)
-index = np.where(Ninputs.variables["time"][:].data == y)[0] # select the year
-fix_1800 = ( Ninputs.variables["fixation"][index,:,:].data *tanomaly_sens )[0,:,:]
-dep_1800 = ( Ninputs.variables["deposition"][index,:,:].data *tanomaly_sens  )[0,:,:]
-fert_1800 = ( Ninputs.variables["fertilisation"][index,:,:].data *tanomaly_sens *post[3] )[0,:,:]
-total_1800 = fix_1800 + dep_1800 + fert_1800
-
-plot_map(LON,LAT,k_G_post*f_N2O_post*total,"N2O (g-N m-2 a-1)",filename="figs/202410_FirstRuns/n2o_map")
-plot_map(LON,LAT,k_G_post*f_N2O_post*(total-total_1800),"N2O (g-N m-2 a-1)",filename="figs/202410_FirstRuns/n2o_map_anthrop")
+utils.plot_map(preamble.LON,preamble.LAT,emissions_2022,"N2O (g-N m-2 a-1)",filename="figs/202502_NewWFPS/n2o_map",show=1)
+utils.plot_map(preamble.LON,preamble.LAT,emissions_2022-emissions_1800,"N2O anthrop (g-N m-2 a-1)",filename="figs/202502_NewWFPS/n2o_map_anthrop",show=1)
 vminmax = (-8,-1)
-plot_map(LON,LAT,np.log(k_G_post*f_N2O_post*total).clip(vminmax[0],vminmax[1]),"N2O (log, g-N m-2 a-1)",vminmax=vminmax,filename="figs/202410_FirstRuns/n2o_map_log")
-plot_map(LON,LAT,np.log(k_G_post*f_N2O_post*(total-total_1800)).clip(vminmax[0],vminmax[1]),"N2O, anthrop (log, g-N m-2 a-1)",vminmax=vminmax,filename="figs/202410_FirstRuns/n2o_map_anthrop_log")
+utils.plot_map(preamble.LON,preamble.LAT,np.log(emissions_2022).clip(vminmax[0],vminmax[1]),"N2O (log, g-N m-2 a-1)",vminmax=vminmax,filename="figs/202502_NewWFPS/n2o_map_log",show=1)
+utils.plot_map(preamble.LON,preamble.LAT,np.log(emissions_2022-emissions_1800).clip(vminmax[0],vminmax[1]),"N2O, anthrop (log, g-N m-2 a-1)",vminmax=vminmax,filename="figs/202502_NewWFPS/n2o_map_anthrop_log",show=1)
 
 # Emissions with latitude and time
 from matplotlib import colormaps
@@ -118,29 +111,29 @@ emissions_grid = k_G_post*f_N2O_post*total
 fig = plt.figure(figsize=(12,6))
 for n,y in enumerate(years_to_plot):
     # get T sens
-    tindex = int(np.where(abs(Tanom.variables["time"][:]-y) == np.min(abs(Tanom.variables["time"][:]-y)))[0])
-    tanomaly = Tnorm[tindex,:,:]
+    tindex = int(np.where(abs(preamble.Tanom.variables["time"][:]-y) == np.min(abs(preamble.Tanom.variables["time"][:]-y)))[0])
+    tanomaly = preamble.Tnorm[tindex,:,:]
     tanomaly_sens = (post[4]-1)*tanomaly + 1
     # get data (g m-2 y-1)
-    index = np.where(Ninputs.variables["time"][:].data == y)[0] # select the year
-    fix = ( Ninputs.variables["fixation"][index,:,:].data *tanomaly_sens )[0,:,:]
-    dep = ( Ninputs.variables["deposition"][index,:,:].data *tanomaly_sens  )[0,:,:]
-    fert = ( Ninputs.variables["fertilisation"][index,:,:].data *tanomaly_sens *post[3] )[0,:,:]
+    index = np.where(preamble.Ninputs.variables["time"][:].data == y)[0] # select the year
+    fix = ( preamble.Ninputs.variables["fixation"][index,:,:].data *tanomaly_sens )[0,:,:]
+    dep = ( preamble.Ninputs.variables["deposition"][index,:,:].data *tanomaly_sens  )[0,:,:]
+    fert = ( preamble.Ninputs.variables["fertilisation"][index,:,:].data *tanomaly_sens *post[3] )[0,:,:]
     total = fix + dep + fert
     # Find emissions by lat and plot
-    emissions = k_G_post*f_N2O_post*total*area_grid/1000/1000 # tonnes (10^6 grams) y-1
+    emissions = k_G_post*f_N2O_post*total*preamble.area_grid/1000/1000 # tonnes (10^6 grams) y-1
     emissions_by_lat = np.nansum(emissions,axis=1)
     colour_location = (y-np.nanmin(years_to_plot))/(np.nanmax(years_to_plot)-np.nanmin(years_to_plot)) # chosen year normalised to 0-1
-    plt.plot(LAT[:,0],emissions_by_lat,"-",color=colours_to_plot(colour_location),label=y)
+    plt.plot(preamble.LAT[:,0],emissions_by_lat,"-",color=colours_to_plot(colour_location),label=y)
 plt.ylabel("N2O emissions (10^6 g N2O-N a-1)")
 plt.legend()
 fig.tight_layout()
 fig.show() 
-plt.savefig("figs/202410_FirstRuns/emissions_by_lat.png") 
-plt.savefig("figs/202410_FirstRuns/emissions_by_lat.pdf") 
+plt.savefig("figs/202502_NewWFPS/emissions_by_lat.png") 
+plt.savefig("figs/202502_NewWFPS/emissions_by_lat.pdf") 
 
 # f_n2o against d15N_grid
-x = d15N_grid[datarng]
+x = preamble.d15N_grid[datarng]
 y = (k_G_post*f_N2O_post)[datarng]
 df = pd.DataFrame({"d15N":x,"fN2O":y})
 df["d15N_round"] = np.round(df["d15N"],1)
@@ -156,8 +149,68 @@ plt.ylabel("d15N (permil)")
 plt.ylabel("f_N2O")
 fig.tight_layout()
 fig.show() 
-plt.savefig("figs/202410_FirstRuns/d15N_fN2O.png") 
-plt.savefig("figs/202410_FirstRuns/d15N_fN2O.pdf") 
+plt.savefig("figs/202502_NewWFPS/d15N_fN2O.png") 
+plt.savefig("figs/202502_NewWFPS/d15N_fN2O.pdf") 
+
+#%% Compare to the Voigt flux dataset
+
+voigt = pd.read_csv("data/N2OFluxes_Voigt-etal_2020_dk20250212.csv")
+
+voigt["flux_model_year"] = np.nan # space for flux 
+voigt["flux_model_1800"] = np.nan # space for flux in 1800 (preindustrial)
+voigt["flux_model_2020"] = np.nan # space for flux in 2020 (current)
+voigt["flux_model_lon_mismatch"] = np.nan # save the closeness of lat and lon match
+voigt["flux_model_lat_mismatch"] = np.nan # 
+# Get fluxes
+lats = preamble.LAT[:,0]
+lons = preamble.LON[0,:]
+emissions_1800, _, _, _ = getmap(1800,preamble,post,k_G_post,f_N2O_post)
+emissions_2020, _, _, _ = getmap(2020,preamble,post,k_G_post,f_N2O_post)
+for n in np.arange(voigt.shape[0]):
+    print(n)
+    # Find the matching cell
+    voigt.loc[n,"flux_model_lat_mismatch"] = np.nanmin(abs(lats-voigt["latitude"].iloc[n]))
+    i = np.where( abs(lats-voigt["latitude"].iloc[n]) == np.nanmin(abs(lats-voigt["latitude"].iloc[n])) )[0]
+    voigt.loc[n,"flux_model_lon_mismatch"] = np.nanmin(abs(lons-voigt["longitude"].iloc[n]))
+    j = np.where( abs(lons-voigt["longitude"].iloc[n]) == np.nanmin(abs(lons-voigt["longitude"].iloc[n])) )[0]
+    # 1800 and 2020 fluxes
+    voigt.loc[n,"flux_model_1800"] = emissions_1800[i,j]
+    voigt.loc[n,"flux_model_2020"] = emissions_2020[i,j]
+    # matching year flux
+    y = np.nanmean([voigt['year_start'].iloc[n],voigt['year_end'].iloc[n]])
+    emissions_y, _, _, _ = getmap(2020,preamble,post,k_G_post,f_N2O_post)
+    voigt.loc[n,"flux_model_year"] = emissions_y[i,j]
+
+# Plot and compare
+lat_res = np.nanmean(np.diff(lats))
+lon_res = np.nanmean(np.diff(lons))
+r = np.where( (voigt["flux_model_lat_mismatch"]<2*lat_res) & (voigt["flux_model_lon_mismatch"]<2*lon_res) )[0]
+
+plt.plot(voigt["annual_N2O_flux_ug_m2_100days-x-2"].iloc[r]/10**6,voigt["flux_model_year"].iloc[r],"x")
+plt.show()
+
+plt.plot(voigt["annual_N2O_flux_ug_m2_100days-x-2"].iloc[r]/10**6,voigt["flux_model_year"].iloc[r],"x")
+plt.xlim([0,0.3])
+plt.show()
+
+r_veg = [ rr for rr in r if voigt['veg_type'].iloc[rr]=="Vegetated" ]
+r_pveg = [ rr for rr in r if voigt['veg_type'].iloc[rr]=="Partly vegetated" ]
+r_bare = [ rr for rr in r if voigt['veg_type'].iloc[rr]=="Bare" ]
+plt.plot(voigt["annual_N2O_flux_ug_m2_100days-x-2"].iloc[r_veg]/10**6,voigt["flux_model_year"].iloc[r_veg],"go",label="Vegetated")
+plt.plot(voigt["annual_N2O_flux_ug_m2_100days-x-2"].iloc[r_pveg]/10**6,voigt["flux_model_year"].iloc[r_pveg],"bo",label="Partly vegetated")
+plt.plot(voigt["annual_N2O_flux_ug_m2_100days-x-2"].iloc[r_bare]/10**6,voigt["flux_model_year"].iloc[r_bare],"ro",label="Bare")
+#plt.xlim([0,0.3])
+plt.show()
+
+plt.plot(np.log(voigt["annual_N2O_flux_ug_m2_100days-x-2"].iloc[r]/10**6),np.log(voigt["flux_model_year"].iloc[r]),"x")
+plt.show()
+
+from sklearn.linear_model import LinearRegression
+X = np.array(voigt["annual_N2O_flux_ug_m2_100days-x-2"].iloc[r]/10**6)
+y = np.array(voigt["flux_model_year"].iloc[r])
+rr = [ not np.isnan(yy) for yy in y ]
+reg = LinearRegression().fit(X[rr].reshape(-1, 1), y[rr])
+reg.score(X[rr].reshape(-1, 1), y[rr])
 
 #### FROM global version; incorporate some of these later...
 
@@ -185,15 +238,15 @@ N_processes_vec_sd = np.nanstd(N_processes_vec_all,axis=2)
 N_summary_sd = np.nanstd(N_summary_all,axis=2)
 N_summary_full_sd = np.nanstd(N_summary_full_all,axis=2)
 
-k_L_sd = np.zeros(d15N_grid.shape)+np.nan; k_L_sd[datarng] = soilmodres_sd[:,0]
-k_G_sd = np.zeros(d15N_grid.shape)+np.nan; k_G_sd[datarng] = soilmodres_sd[:,2]
-f_denit_sd = np.zeros(d15N_grid.shape)+np.nan; f_denit_sd[datarng] = N_processes_vec_sd[:,3]
-f_N2O_sd = np.zeros(d15N_grid.shape)+np.nan; f_N2O_sd[datarng] = N_processes_vec_sd[:,0]
-f_N2_sd = np.zeros(d15N_grid.shape)+np.nan; f_N2_sd[datarng] = N_processes_vec_sd[:,1]
-f_NO_sd = np.zeros(d15N_grid.shape)+np.nan; f_NO_sd[datarng] = N_processes_vec_sd[:,2]
-d15N_modoutput_sd = np.zeros(d15N_grid.shape)+np.nan; d15N_modoutput_sd[datarng] = soilmodres_sd[:,3]
-N2O_d15N_sd = np.zeros(d15N_grid.shape)+np.nan; N2O_d15N_sd[datarng] = soilmodres_sd[:,4]
-N2O_SP_sd = np.zeros(d15N_grid.shape)+np.nan; N2O_SP_sd[datarng] = soilmodres_sd[:,5]
+k_L_sd = np.zeros(preamble.d15N_grid.shape)+np.nan; k_L_sd[datarng] = soilmodres_sd[:,0]
+k_G_sd = np.zeros(preamble.d15N_grid.shape)+np.nan; k_G_sd[datarng] = soilmodres_sd[:,2]
+f_denit_sd = np.zeros(preamble.d15N_grid.shape)+np.nan; f_denit_sd[datarng] = N_processes_vec_sd[:,3]
+f_N2O_sd = np.zeros(preamble.d15N_grid.shape)+np.nan; f_N2O_sd[datarng] = N_processes_vec_sd[:,0]
+f_N2_sd = np.zeros(preamble.d15N_grid.shape)+np.nan; f_N2_sd[datarng] = N_processes_vec_sd[:,1]
+f_NO_sd = np.zeros(preamble.d15N_grid.shape)+np.nan; f_NO_sd[datarng] = N_processes_vec_sd[:,2]
+d15N_modoutput_sd = np.zeros(preamble.d15N_grid.shape)+np.nan; d15N_modoutput_sd[datarng] = soilmodres_sd[:,3]
+N2O_d15N_sd = np.zeros(preamble.d15N_grid.shape)+np.nan; N2O_d15N_sd[datarng] = soilmodres_sd[:,4]
+N2O_SP_sd = np.zeros(preamble.d15N_grid.shape)+np.nan; N2O_SP_sd[datarng] = soilmodres_sd[:,5]
 
 #%% basics
 
@@ -226,13 +279,13 @@ EF_zones_post = utils.climzone_means(var1_grid = MAT_grid, var2_grid = BulkD_gri
 
 #%% Plot k_G and f_N2O with uncertainties
 
-kG_post_fromallres = np.zeros(d15N_grid.shape)+np.nan; kG_post_fromallres[datarng] = post_kG_m
-kG_post_sd_fromallres = np.zeros(d15N_grid.shape)+np.nan; kG_post_sd_fromallres[datarng] = post_kG_sd
-fN2O_post_fromallres = np.zeros(d15N_grid.shape)+np.nan; fN2O_post_fromallres[datarng] = post_fN2O_m
-fN2O_post_sd_fromallres = np.zeros(d15N_grid.shape)+np.nan; fN2O_post_sd_fromallres[datarng] = post_fN2O_sd
+kG_post_fromallres = np.zeros(preamble.d15N_grid.shape)+np.nan; kG_post_fromallres[datarng] = post_kG_m
+kG_post_sd_fromallres = np.zeros(preamble.d15N_grid.shape)+np.nan; kG_post_sd_fromallres[datarng] = post_kG_sd
+fN2O_post_fromallres = np.zeros(preamble.d15N_grid.shape)+np.nan; fN2O_post_fromallres[datarng] = post_fN2O_m
+fN2O_post_sd_fromallres = np.zeros(preamble.d15N_grid.shape)+np.nan; fN2O_post_sd_fromallres[datarng] = post_fN2O_sd
 # note: these fields are almost identical to the ones got from the mean post, then the model run!
 tmp = ((post_kG_sd/post_kG_m)**2 + (post_fN2O_sd/post_fN2O_m)**2)**0.5 * post_kG_m * post_fN2O_m
-kGfN2O_post_sd_fromallres = np.zeros(d15N_grid.shape)+np.nan; kGfN2O_post_sd_fromallres[datarng] = tmp
+kGfN2O_post_sd_fromallres = np.zeros(preamble.d15N_grid.shape)+np.nan; kGfN2O_post_sd_fromallres[datarng] = tmp
 
 plot_map(LON,LAT,kG_post_fromallres*100,"fraction of Nr lost to gas production")
 plot_map(LON,LAT,kG_post_sd_fromallres*100,"fraction of Nr lost to gas production, uncertainty")
@@ -964,7 +1017,7 @@ for n in range(0,len(regionnames)):
     
 # find modelled mean values of N2O total, fN2O, f_G, d15N grid, d15N actual, and stdev/n of each
 years_n = np.array((1990,2020))
-datarng = np.where((~np.isnan(d15N_grid)))# & (WFPS_grid!=100)) # don't use the ==100 values if plotting cumsum figure
+datarng = np.where((~np.isnan(preamble.d15N_grid)))# & (WFPS_grid!=100)) # don't use the ==100 values if plotting cumsum figure
 factor_area = (area_grid/1000/1000/1000/1000)[datarng] # convert to Tg-N y-1
 index = np.zeros(len(years_n))
 for n in range(0,len(years_n)):  
@@ -1014,7 +1067,7 @@ df.iloc[-1]
 boxes = np.array((-90,-30,0,30,90))
 # find modelled annual emissions per box per year
 years_n = np.arange(1850,2020)
-datarng = np.where((~np.isnan(d15N_grid)))
+datarng = np.where((~np.isnan(preamble.d15N_grid)))
 factor_area = (area_grid/1000/1000/1000/1000)[datarng] # convert to Tg-N y-1
 lon_vec = LON[datarng]
 lat_vec = LAT[datarng]
@@ -1047,7 +1100,7 @@ df.to_csv("StefanHenne_N2O_boxestimates.txt")
 ssa = np.array((-15,50,-35,15))
 # find modelled annual emissions per box per year
 years_n = np.arange(1850,2049)
-datarng = np.where((~np.isnan(d15N_grid)))# & (WFPS_grid!=100)) # don't use the ==100 values if plotting cumsum figure
+datarng = np.where((~np.isnan(preamble.d15N_grid)))# & (WFPS_grid!=100)) # don't use the ==100 values if plotting cumsum figure
 factor_area = (area_grid/1000/1000/1000/1000)[datarng] # convert to Tg-N y-1
 lon_vec = LON[datarng]
 lat_vec = LAT[datarng]
