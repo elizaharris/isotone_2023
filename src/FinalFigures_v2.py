@@ -47,10 +47,10 @@ N_summary_full = fullmod_post[6]
 # 13-18: NH3 fert dep fix, leach fert dep fix
 
 #%% basics
-plot_map(LON,LAT,k_G_post*100,"fraction of Nr lost to microbial gas production, post",filename="figs/202410_FirstRuns/f_gas_map")
-plot_map(LON,LAT,k_G_post*f_N2O_post*100,"fraction of Nr lost to N2O, post",filename="figs/202410_FirstRuns/f_n2o_map")
-plot_map(LON,LAT,k_G_prior*100,"fraction of Nr lost to microbial gas production, post",filename="figs/202410_FirstRuns/f_gas_map_prior")
-plot_map(LON,LAT,k_G_prior*f_N2O_prior*100,"fraction of Nr lost to N2O, post",filename="figs/202410_FirstRuns/f_n2o_map_prior")
+plot_map(LON,LAT,k_G_post*100,"fraction of Nr lost to microbial gas production, post",filename="figs/202502_NewWFPS/f_gas_map")
+plot_map(LON,LAT,k_G_post*f_N2O_post*100,"fraction of Nr lost to N2O, post",filename="figs/202502_NewWFPS/f_n2o_map")
+plot_map(LON,LAT,k_G_prior*100,"fraction of Nr lost to microbial gas production, post",filename="figs/202502_NewWFPS/f_gas_map_prior")
+plot_map(LON,LAT,k_G_prior*f_N2O_prior*100,"fraction of Nr lost to N2O, post",filename="figs/202502_NewWFPS/f_n2o_map_prior")
 
 # global EF
 factor_area = (area_grid/1000/1000/1000/1000)
@@ -61,7 +61,7 @@ y = N_summary[:,0] == 2022
 print("Effective global EF = "+str(N_summary[y,1]/np.sum(N_summary_full[y,1:4])*100)+"%")
 print("Effective global EF = "+str(fullmod_prior[5][y,1]/np.sum(fullmod_prior[6][y,1:4])*100)+"% (prior)")
 # Total permafrost emissions
-print("Terrestrial N2O emissions in TgN y-1: 1800 for clim. sens., 1860 6.3pm1.1, 2010 10pm2.2 in Tian2019")
+print("Terrestrial N2O emissions in TgN y-1: 1800 for clim. sens., 1.03 for NH Permafrost from Voigt et al.")
 print("My results: 1860 = "+str(N_summary[N_summary[:,0] == 1860,1])+"; 2010 = "+str(N_summary[N_summary[:,0] == 2010,1]))
 print("My results: 2020 = "+str(N_summary[N_summary[:,0] == 2020,1]))
 print("My results: 2022 = "+str(N_summary[N_summary[:,0] == 2022,1]))

@@ -24,7 +24,7 @@ def prob_g(x,x0,sigma):
     return np.nanmean(res)
 
 # define function for plotting    
-def plot_map(longi,lati,gridval,title="title",vminmax=(np.nan,np.nan),cmap="viridis",filename="figs/testfig") :
+def plot_map(longi,lati,gridval,title="title",vminmax=(np.nan,np.nan),cmap="viridis",filename="figs/testfig",show=0) :
     fig = plt.figure(figsize=(12,6))
     ax = fig.add_subplot(1,1,1,projection=ccrs.PlateCarree())
     ax.coastlines()
@@ -38,7 +38,8 @@ def plot_map(longi,lati,gridval,title="title",vminmax=(np.nan,np.nan),cmap="viri
     fig.tight_layout()
     plt.savefig(filename+".png") 
     plt.savefig(filename+".pdf") 
-    fig.show() 
+    if show==1:
+        fig.show() 
 
 # function for mean by "climate zones" defined by 2 variables
 def climzone_means(var1_grid, var2_grid, datavar1,datavar2,data,LON,LAT,bins=4,plotfigs="N"):  
