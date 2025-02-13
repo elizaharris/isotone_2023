@@ -35,14 +35,21 @@ lon_out = np.arange(configs.res["lonstart"], configs.res["lonend"], configs.res[
 #%% Global AI for ocean mask... (not needed, no ocean mask required, copy again from NH3 regrid if needed)
 
 #%% Get the WFPS and check
-    
-wfps_rast = rio.open("../isotone-rawdata/wfps_0-7cm/wfps0007_globalmap_2020.tif")
-wfps_list = rast_to_list(wfps_rast,5,dataclip=(0,np.inf),takemean="N") # data as list
-### For some reason, using less than 5 here gives lines in the output
+# For some reason there are lots of zeros/nans in parts, that shouldn't be there... need to ask Dan
+wfps_rast = rio.open("../isotone-rawdata/wfps_0-7cm/wfps0007_globalmap_2010.tif")
+plt.imshow(wfps_rast.read(1), cmap='pink')
+plt.show()
+
+wfps_rast = rio.open("../isotone-rawdata/wfps_7-28cm/wfps0728_globalmap_2010.tif")
+plt.imshow(wfps_rast.read(1), cmap='pink')
+plt.show()
+
+wfps_list = rast_to_list(wfps_rast,2,dataclip=(0.05,np.inf),takemean="Y") # data as list
+# Because of the lines, using less than 5-10 here gives problems
 # regrid the data from 1D back to 2D and to a rougher grid (too many values for now otherwise)
 wfps_grid = griddata((wfps_list[:,0],wfps_list[:,1]), wfps_list[:,2], (LON,LAT), method='linear')
 # wfps_grid = (wfps_grid).clip(0,100)*ocean_mask # not needed
-plot_map(LON,LAT,wfps_grid,title="wfps",filename="figs/input_data/wfps_0-7cm_2020")
+plot_map(LON,LAT,wfps_grid,title="wfps",filename="figs/input_data/wfps_0-7cm_2020",show=1)
 
 #%% Get file names
 
@@ -71,10 +78,10 @@ years = years_007.copy()
 
 #%% Import and regrid each file
 wfps_007 = np.zeros((wfps_grid.shape[0],wfps_grid.shape[1],nyears))*np.nan
-for n,s in enumerate(wfps_filenames_007):
+for n,s in enumerate(wfps_filenames_007[0:6]):
     print(s)
     wfps_rast = rio.open("../isotone-rawdata/wfps_0-7cm/"+s)
-    wfps_list = rast_to_list(wfps_rast,2,dataclip=(0,np.inf),takemean="N") # data as list 
+    wfps_list = rast_to_list(wfps_rast,2,dataclip=(0,np.inf),takemean="Y") # data as list 
     wfps_grid = griddata((wfps_list[:,0],wfps_list[:,1]), wfps_list[:,2], (LON,LAT), method='linear')
     wfps_007[:,:,n] = wfps_grid
     if years[n]==2020:
@@ -86,7 +93,7 @@ wfps_728 = np.zeros((wfps_grid.shape[0],wfps_grid.shape[1],nyears))*np.nan
 for n,s in enumerate(wfps_filenames_728):
     print(s)
     wfps_rast = rio.open("../isotone-rawdata/wfps_7-28cm/"+s)
-    wfps_list = rast_to_list(wfps_rast,2,dataclip=(0,np.inf),takemean="N") # data as list 
+    wfps_list = rast_to_list(wfps_rast,5,dataclip=(0,np.inf),takemean="N") # data as list 
     wfps_grid = griddata((wfps_list[:,0],wfps_list[:,1]), wfps_list[:,2], (LON,LAT), method='linear')
     wfps_728[:,:,n] = wfps_grid
     if years[n]==2020:

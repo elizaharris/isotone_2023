@@ -154,6 +154,10 @@ plt.savefig("figs/202502_NewWFPS/d15N_fN2O.pdf")
 
 #%% Compare to the Voigt flux dataset
 
+# Get inputs and find EFs for Voigt dataset
+# Histograms of model and Voigt (also Voigt different classes eg. vegetated)
+# PCA to look at what drives high fluxes in Voigt (which vars?)
+
 voigt = pd.read_csv("data/N2OFluxes_Voigt-etal_2020_dk20250212.csv")
 
 voigt["flux_model_year"] = np.nan # space for flux 
@@ -161,11 +165,12 @@ voigt["flux_model_1800"] = np.nan # space for flux in 1800 (preindustrial)
 voigt["flux_model_2020"] = np.nan # space for flux in 2020 (current)
 voigt["flux_model_lon_mismatch"] = np.nan # save the closeness of lat and lon match
 voigt["flux_model_lat_mismatch"] = np.nan # 
+voigt[["fix","fert","dep","total_inputs","k_G_post","f_N2O_post"]] = np.nan
 # Get fluxes
 lats = preamble.LAT[:,0]
 lons = preamble.LON[0,:]
-emissions_1800, _, _, _ = getmap(1800,preamble,post,k_G_post,f_N2O_post)
-emissions_2020, _, _, _ = getmap(2020,preamble,post,k_G_post,f_N2O_post)
+emissions_1800, fix_1800, dep_1800, fert_1800 = getmap(1800,preamble,post,k_G_post,f_N2O_post)
+emissions_2020, fix_2020, dep_2020, fert_2020 = getmap(2020,preamble,post,k_G_post,f_N2O_post)
 for n in np.arange(voigt.shape[0]):
     print(n)
     # Find the matching cell
@@ -178,13 +183,86 @@ for n in np.arange(voigt.shape[0]):
     voigt.loc[n,"flux_model_2020"] = emissions_2020[i,j]
     # matching year flux
     y = np.nanmean([voigt['year_start'].iloc[n],voigt['year_end'].iloc[n]])
-    emissions_y, _, _, _ = getmap(2020,preamble,post,k_G_post,f_N2O_post)
+    emissions_y, fix_y, dep_y, fert_y = getmap(2020,preamble,post,k_G_post,f_N2O_post)
+    voigt.loc[n,"fix"] = fix_y[i,j]
+    voigt.loc[n,"dep"] = dep_y[i,j]
+    voigt.loc[n,"fert"] = fert_y[i,j]
+    voigt.loc[n,"total_inputs"] = np.nansum([fix_y[i,j],dep_y[i,j],fert_y[i,j]])
     voigt.loc[n,"flux_model_year"] = emissions_y[i,j]
-
-# Plot and compare
+    voigt.loc[n,"k_G_post"] = k_G_post[i,j]
+    voigt.loc[n,"f_N2O_post"] = f_N2O_post[i,j]
+voigt["EF_N2O_mod"] = voigt["k_G_post"]*voigt["f_N2O_post"]
+voigt["EF_N2O_obs"] = (voigt["annual_N2O_flux_ug_m2_100days-x-2"]/(10**6))/voigt["total_inputs"]
+    
+# Find where gridcells are well matched
 lat_res = np.nanmean(np.diff(lats))
 lon_res = np.nanmean(np.diff(lons))
 r = np.where( (voigt["flux_model_lat_mismatch"]<2*lat_res) & (voigt["flux_model_lon_mismatch"]<2*lon_res) )[0]
+    
+# Histogram of fluxes
+fig, ax = plt.subplots(2,1,figsize=(12,6))
+x = voigt["annual_N2O_flux_ug_m2_100days-x-2"].copy()/(10**6)
+x[x > 0.1] = np.nan
+x[x < -0.02] = np.nan
+label_obs = "Obs (no outliers), mean="+str(round(np.nanmean(x[r]),3))+", std="+str(round(np.nanstd(x[r]),3))
+label_mod = "Mod, mean="+str(round(np.nanmean(voigt["flux_model_year"].iloc[r]),3))+", std="+str(round(np.nanstd(voigt["flux_model_year"].iloc[r]),3))
+bins = np.arange(-0.02,0.1,0.005)
+ax[0].hist(x[r], bins, histtype='step', fill=False, density=True, label=label_obs) # Plot at close scale
+ax[0].hist(voigt["flux_model_year"].iloc[r], bins, histtype='step', fill=False, density=True, label=label_mod) # Model
+ax[0].legend()
+bins = np.arange(-1,15,0.25)
+ax[1].hist(voigt["annual_N2O_flux_ug_m2_100days-x-2"].iloc[r]/(10**6), bins, histtype='step', fill=False, density=True) # Also at full scale
+ax[1].hist(voigt["flux_model_year"].iloc[r], bins, histtype='step', fill=False, density=True) # Model
+ax[1].set_xlabel('N20 flux (g m-2 y-1)')
+plt.show()
+
+# Histogram of EFs
+fig, ax = plt.subplots(2,1,figsize=(12,6))
+x = voigt["EF_N2O_obs"].copy()
+x[x > 0.2] = np.nan
+x[x < -0.02] = np.nan
+label_obs = "Obs, mean="+str(round(np.nanmean(x[r]),3))+", std="+str(round(np.nanstd(x[r]),3))
+label_mod = "Mod, mean="+str(round(np.nanmean(voigt["EF_N2O_mod"].iloc[r]),3))+", std="+str(round(np.nanstd(voigt["flux_model_year"].iloc[r]),3))
+bins = np.arange(-0.02,0.2,0.01) 
+ax[0].hist(x[r], bins, histtype='step', fill=False, density=True, label=label_obs) # Plot at close scale
+ax[0].hist(voigt["EF_N2O_mod"].iloc[r], bins, histtype='step', fill=False, density=True, label=label_mod) # Model
+ax[0].legend()
+bins = np.hstack([np.arange(-10,100,10),100,200,400])
+ax[1].hist(voigt["EF_N2O_obs"].iloc[r], bins, histtype='step', fill=False, density=True) # Also at full scale
+ax[1].hist(voigt["EF_N2O_mod"].iloc[r], bins, histtype='step', fill=False, density=True) # Model
+ax[1].set_xlabel('Observations (g m-2 y-1)')
+plt.show()
+
+# Combine better by box/whisker plots
+fig, ax = plt.subplots(2,2,figsize=(12,6))
+# Annual fluxes
+x = voigt["annual_N2O_flux_ug_m2_100days-x-2"].copy()/(10**6)
+label_obs = "Obs (no outliers), mean="+str(round(np.nanmean(x[r]),3))+", std="+str(round(np.nanstd(x[r]),3))
+x[x > 0.1] = np.nan
+x[x < -0.02] = np.nan
+label_obs_noout = "Obs (no outliers), mean="+str(round(np.nanmean(x[r]),3))+", std="+str(round(np.nanstd(x[r]),3))
+label_mod = "Mod, mean="+str(round(np.nanmean(voigt["flux_model_year"].iloc[r]),3))+", std="+str(round(np.nanstd(voigt["flux_model_year"].iloc[r]),3))
+data = [voigt["annual_N2O_flux_ug_m2_100days-x-2"].iloc[r]/(10**6),voigt["flux_model_year"].iloc[r]] # Combine data to a list for boxplot
+data[1] = data[1][~np.isnan(data[1])]
+ax[0,0].boxplot(data)
+ax[0,0].legend()
+ax[1,0].boxplot(data)
+ax[1,0].set_ylim([0,0.15])
+# EF
+x = voigt["EF_N2O_obs"].copy()
+label_obs = "Obs (no outliers), mean="+str(round(np.nanmean(x[r]),3))+", std="+str(round(np.nanstd(x[r]),3))
+x[x > 0.2] = np.nan
+x[x < -0.02] = np.nan
+label_obs_noout = "Obs (no outliers), mean="+str(round(np.nanmean(x[r]),3))+", std="+str(round(np.nanstd(x[r]),3))
+label_mod = "Mod, mean="+str(round(np.nanmean(voigt["EF_N2O_mod"].iloc[r]),3))+", std="+str(round(np.nanstd(voigt["EF_N2O_mod"].iloc[r]),3))
+data = [voigt["EF_N2O_obs"].iloc[r],voigt["EF_N2O_mod"].iloc[r]] # Combine data to a list for boxplot
+data[0] = data[0][~np.isnan(data[0])]
+data[1] = data[1][~np.isnan(data[1])]
+ax[0,1].boxplot(data)
+ax[0,1].legend()
+ax[1,1].boxplot(data)
+ax[1,1].set_ylim([0,0.15])
+plt.show()
 
 plt.plot(voigt["annual_N2O_flux_ug_m2_100days-x-2"].iloc[r]/10**6,voigt["flux_model_year"].iloc[r],"x")
 plt.show()

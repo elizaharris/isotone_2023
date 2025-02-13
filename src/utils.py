@@ -98,9 +98,10 @@ def climzone_means(var1_grid, var2_grid, datavar1,datavar2,data,LON,LAT,bins=4,p
         return(res)
     
 # function to transform to a list of lon, lat, values and average every X points
-def rast_to_list(rastdata,Xred,takemean="Y",dataclip="N") :
+def rast_to_list(rastdata,Xred,takemean="Y",dataclip="N",replace_w_nan="N") :
     arrdata = rastdata.read(1)
     if dataclip != "N" : arrdata = arrdata.clip(dataclip[0],dataclip[1])
+    if replace_w_nan != "N" : arrdata[arrdata==replace_w_nan] = np.nan
     output = np.zeros((round(arrdata.shape[0]/Xred)*round(arrdata.shape[1]/Xred),3))
     z = 0
     for n in range(0,round(arrdata.shape[0]/Xred)) :
@@ -118,8 +119,8 @@ def rast_to_list(rastdata,Xred,takemean="Y",dataclip="N") :
                 nvals = np.repeat(range(int(nmid-Xred/2),int(nmid+Xred/2)),Xred) # repeats each element X times
                 ivals = np.tile(range(int(imid-Xred/2),int(imid+Xred/2)),Xred) # repeats whole range X times
             if takemean == "N" :  # take only the single points at each Xred
-                nvals = nmid # repeats each element X times
-                ivals = imid # repeats whole range X times
+                nvals = nmid 
+                ivals = imid 
             output[z,2] = np.nanmean(arrdata[nvals,ivals])
             z = z+1
     return output
