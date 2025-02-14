@@ -93,7 +93,7 @@ wfps_728 = np.zeros((wfps_grid.shape[0],wfps_grid.shape[1],nyears))*np.nan
 for n,s in enumerate(wfps_filenames_728):
     print(s)
     wfps_rast = rio.open("../isotone-rawdata/wfps_7-28cm/"+s)
-    wfps_list = rast_to_list(wfps_rast,5,dataclip=(0,np.inf),takemean="N") # data as list 
+    wfps_list = rast_to_list(wfps_rast,2,dataclip=(0,np.inf),takemean="Y") # data as list 
     wfps_grid = griddata((wfps_list[:,0],wfps_list[:,1]), wfps_list[:,2], (LON,LAT), method='linear')
     wfps_728[:,:,n] = wfps_grid
     if years[n]==2020:

@@ -81,16 +81,15 @@ fig.show()
 
 # Get map of emissions for a certain year
 def getmap(y,preamble,post,k_G_post,f_N2O_post):
-    y = 2022
     # get T sens
     tindex = int(np.where(abs(preamble.Tanom.variables["time"][:]-y) == np.min(abs(preamble.Tanom.variables["time"][:]-y)))[0])
     tanomaly = preamble.Tnorm[tindex,:,:]
     tanomaly_sens = (post[4]-1)*tanomaly + 1
     # get N input data (g m-2 y-1)
-    index = np.where(preamble.Ninputs.variables["time"][:].data == y)[0] # select the year
-    fix = ( preamble.Ninputs.variables["fixation"][index,:,:].data *tanomaly_sens )[0,:,:]
-    dep = ( preamble.Ninputs.variables["deposition"][index,:,:].data *tanomaly_sens  )[0,:,:]
-    fert = ( preamble.Ninputs.variables["fertilisation"][index,:,:].data *tanomaly_sens *post[3] )[0,:,:]
+    index = int(np.where(abs(preamble.Ninputs.variables["time"][:]-y) == np.min(abs(preamble.Ninputs.variables["time"][:]-y)))[0])
+    fix = ( preamble.Ninputs.variables["fixation"][index,:,:].data *tanomaly_sens )[:,:]
+    dep = ( preamble.Ninputs.variables["deposition"][index,:,:].data *tanomaly_sens  )[:,:]
+    fert = ( preamble.Ninputs.variables["fertilisation"][index,:,:].data *tanomaly_sens *post[3] )[:,:]
     total = fix + dep + fert
     n2o_total = k_G_post*f_N2O_post*total
     return(n2o_total, fix, dep, fert)
@@ -107,24 +106,13 @@ utils.plot_map(preamble.LON,preamble.LAT,np.log(emissions_2022-emissions_1800).c
 from matplotlib import colormaps
 years_to_plot = np.arange(1850,2030,10)
 colours_to_plot = colormaps['cool'].resampled(len(years_to_plot))
-emissions_grid = k_G_post*f_N2O_post*total
+emissions_by_lat_by_time = np.zeros((len(preamble.LAT[:,0]),len(years_to_plot)))
 fig = plt.figure(figsize=(12,6))
 for n,y in enumerate(years_to_plot):
-    # get T sens
-    tindex = int(np.where(abs(preamble.Tanom.variables["time"][:]-y) == np.min(abs(preamble.Tanom.variables["time"][:]-y)))[0])
-    tanomaly = preamble.Tnorm[tindex,:,:]
-    tanomaly_sens = (post[4]-1)*tanomaly + 1
-    # get data (g m-2 y-1)
-    index = np.where(preamble.Ninputs.variables["time"][:].data == y)[0] # select the year
-    fix = ( preamble.Ninputs.variables["fixation"][index,:,:].data *tanomaly_sens )[0,:,:]
-    dep = ( preamble.Ninputs.variables["deposition"][index,:,:].data *tanomaly_sens  )[0,:,:]
-    fert = ( preamble.Ninputs.variables["fertilisation"][index,:,:].data *tanomaly_sens *post[3] )[0,:,:]
-    total = fix + dep + fert
-    # Find emissions by lat and plot
-    emissions = k_G_post*f_N2O_post*total*preamble.area_grid/1000/1000 # tonnes (10^6 grams) y-1
-    emissions_by_lat = np.nansum(emissions,axis=1)
+    emissions_y, _, _, _ = getmap(y,preamble,post,k_G_post,f_N2O_post)
+    emissions_by_lat_by_time[:,n] = np.nansum(emissions_y,axis=1)
     colour_location = (y-np.nanmin(years_to_plot))/(np.nanmax(years_to_plot)-np.nanmin(years_to_plot)) # chosen year normalised to 0-1
-    plt.plot(preamble.LAT[:,0],emissions_by_lat,"-",color=colours_to_plot(colour_location),label=y)
+    plt.plot(preamble.LAT[:,0],emissions_by_lat_by_time[:,n],"-",color=colours_to_plot(colour_location),label=y)
 plt.ylabel("N2O emissions (10^6 g N2O-N a-1)")
 plt.legend()
 fig.tight_layout()
@@ -154,8 +142,6 @@ plt.savefig("figs/202502_NewWFPS/d15N_fN2O.pdf")
 
 #%% Compare to the Voigt flux dataset
 
-# Get inputs and find EFs for Voigt dataset
-# Histograms of model and Voigt (also Voigt different classes eg. vegetated)
 # PCA to look at what drives high fluxes in Voigt (which vars?)
 
 voigt = pd.read_csv("data/N2OFluxes_Voigt-etal_2020_dk20250212.csv")
@@ -198,42 +184,8 @@ voigt["EF_N2O_obs"] = (voigt["annual_N2O_flux_ug_m2_100days-x-2"]/(10**6))/voigt
 lat_res = np.nanmean(np.diff(lats))
 lon_res = np.nanmean(np.diff(lons))
 r = np.where( (voigt["flux_model_lat_mismatch"]<2*lat_res) & (voigt["flux_model_lon_mismatch"]<2*lon_res) )[0]
-    
-# Histogram of fluxes
-fig, ax = plt.subplots(2,1,figsize=(12,6))
-x = voigt["annual_N2O_flux_ug_m2_100days-x-2"].copy()/(10**6)
-x[x > 0.1] = np.nan
-x[x < -0.02] = np.nan
-label_obs = "Obs (no outliers), mean="+str(round(np.nanmean(x[r]),3))+", std="+str(round(np.nanstd(x[r]),3))
-label_mod = "Mod, mean="+str(round(np.nanmean(voigt["flux_model_year"].iloc[r]),3))+", std="+str(round(np.nanstd(voigt["flux_model_year"].iloc[r]),3))
-bins = np.arange(-0.02,0.1,0.005)
-ax[0].hist(x[r], bins, histtype='step', fill=False, density=True, label=label_obs) # Plot at close scale
-ax[0].hist(voigt["flux_model_year"].iloc[r], bins, histtype='step', fill=False, density=True, label=label_mod) # Model
-ax[0].legend()
-bins = np.arange(-1,15,0.25)
-ax[1].hist(voigt["annual_N2O_flux_ug_m2_100days-x-2"].iloc[r]/(10**6), bins, histtype='step', fill=False, density=True) # Also at full scale
-ax[1].hist(voigt["flux_model_year"].iloc[r], bins, histtype='step', fill=False, density=True) # Model
-ax[1].set_xlabel('N20 flux (g m-2 y-1)')
-plt.show()
 
-# Histogram of EFs
-fig, ax = plt.subplots(2,1,figsize=(12,6))
-x = voigt["EF_N2O_obs"].copy()
-x[x > 0.2] = np.nan
-x[x < -0.02] = np.nan
-label_obs = "Obs, mean="+str(round(np.nanmean(x[r]),3))+", std="+str(round(np.nanstd(x[r]),3))
-label_mod = "Mod, mean="+str(round(np.nanmean(voigt["EF_N2O_mod"].iloc[r]),3))+", std="+str(round(np.nanstd(voigt["flux_model_year"].iloc[r]),3))
-bins = np.arange(-0.02,0.2,0.01) 
-ax[0].hist(x[r], bins, histtype='step', fill=False, density=True, label=label_obs) # Plot at close scale
-ax[0].hist(voigt["EF_N2O_mod"].iloc[r], bins, histtype='step', fill=False, density=True, label=label_mod) # Model
-ax[0].legend()
-bins = np.hstack([np.arange(-10,100,10),100,200,400])
-ax[1].hist(voigt["EF_N2O_obs"].iloc[r], bins, histtype='step', fill=False, density=True) # Also at full scale
-ax[1].hist(voigt["EF_N2O_mod"].iloc[r], bins, histtype='step', fill=False, density=True) # Model
-ax[1].set_xlabel('Observations (g m-2 y-1)')
-plt.show()
-
-# Combine better by box/whisker plots
+# Combined visualisation of fluxes and EFs by box/whisker plots
 fig, ax = plt.subplots(2,2,figsize=(12,6))
 # Annual fluxes
 x = voigt["annual_N2O_flux_ug_m2_100days-x-2"].copy()/(10**6)
@@ -248,6 +200,7 @@ ax[0,0].boxplot(data)
 ax[0,0].legend()
 ax[1,0].boxplot(data)
 ax[1,0].set_ylim([0,0.15])
+ax[0,0].set_ylabel("N2O flux (g-N m-2 y-1)")
 # EF
 x = voigt["EF_N2O_obs"].copy()
 label_obs = "Obs (no outliers), mean="+str(round(np.nanmean(x[r]),3))+", std="+str(round(np.nanstd(x[r]),3))
@@ -261,23 +214,29 @@ data[1] = data[1][~np.isnan(data[1])]
 ax[0,1].boxplot(data)
 ax[0,1].legend()
 ax[1,1].boxplot(data)
-ax[1,1].set_ylim([0,0.15])
+ax[1,1].set_ylim([0,0.3])
+ax[0,1].set_ylabel("% of N inputs emitted as N2O annually")
+fig.tight_layout()
 plt.show()
 
-plt.plot(voigt["annual_N2O_flux_ug_m2_100days-x-2"].iloc[r]/10**6,voigt["flux_model_year"].iloc[r],"x")
-plt.show()
-
-plt.plot(voigt["annual_N2O_flux_ug_m2_100days-x-2"].iloc[r]/10**6,voigt["flux_model_year"].iloc[r],"x")
-plt.xlim([0,0.3])
-plt.show()
-
+# 1:1 plot split by veg type
+fig, ax = plt.subplots(2,1,figsize=(5,8))
 r_veg = [ rr for rr in r if voigt['veg_type'].iloc[rr]=="Vegetated" ]
 r_pveg = [ rr for rr in r if voigt['veg_type'].iloc[rr]=="Partly vegetated" ]
 r_bare = [ rr for rr in r if voigt['veg_type'].iloc[rr]=="Bare" ]
-plt.plot(voigt["annual_N2O_flux_ug_m2_100days-x-2"].iloc[r_veg]/10**6,voigt["flux_model_year"].iloc[r_veg],"go",label="Vegetated")
-plt.plot(voigt["annual_N2O_flux_ug_m2_100days-x-2"].iloc[r_pveg]/10**6,voigt["flux_model_year"].iloc[r_pveg],"bo",label="Partly vegetated")
-plt.plot(voigt["annual_N2O_flux_ug_m2_100days-x-2"].iloc[r_bare]/10**6,voigt["flux_model_year"].iloc[r_bare],"ro",label="Bare")
-#plt.xlim([0,0.3])
+ax[0].plot(voigt["annual_N2O_flux_ug_m2_100days-x-2"].iloc[r_veg]/10**6,voigt["flux_model_year"].iloc[r_veg],"go",label="Vegetated")
+ax[0].plot(voigt["annual_N2O_flux_ug_m2_100days-x-2"].iloc[r_pveg]/10**6,voigt["flux_model_year"].iloc[r_pveg],"bo",label="Partly vegetated")
+ax[0].plot(voigt["annual_N2O_flux_ug_m2_100days-x-2"].iloc[r_bare]/10**6,voigt["flux_model_year"].iloc[r_bare],"ro",label="Bare")
+ax[1].plot(voigt["annual_N2O_flux_ug_m2_100days-x-2"].iloc[r_veg]/10**6,voigt["flux_model_year"].iloc[r_veg],"go",label="Vegetated")
+ax[1].plot(voigt["annual_N2O_flux_ug_m2_100days-x-2"].iloc[r_pveg]/10**6,voigt["flux_model_year"].iloc[r_pveg],"bo",label="Partly vegetated")
+ax[1].plot(voigt["annual_N2O_flux_ug_m2_100days-x-2"].iloc[r_bare]/10**6,voigt["flux_model_year"].iloc[r_bare],"ro",label="Bare")
+ax[1].plot(voigt["flux_model_year"].iloc[r],voigt["flux_model_year"].iloc[r],"c-")
+ax[1].set_xlim([-0.01,0.15])
+ax[1].set_ylim([-0.01,0.15])
+ax[0].legend()
+ax[1].set_xlabel("Observed flux (g-N m-2 y-1)")
+ax[1].set_ylabel("Modelled flux (g-N m-2 y-1)")
+fig.tight_layout()
 plt.show()
 
 plt.plot(np.log(voigt["annual_N2O_flux_ug_m2_100days-x-2"].iloc[r]/10**6),np.log(voigt["flux_model_year"].iloc[r]),"x")
