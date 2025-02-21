@@ -8,6 +8,11 @@ Run after "FullModel.." and "Read_MCMC.." to generate final figures
 @author: elizaharris
 """
 
+if not os.path.exists(parentdir+"/isotone_arcticBranch/figs/"+run_name):
+    os.makedirs(parentdir+"/isotone_arcticBranch/figs/"+run_name)
+if not os.path.exists(parentdir+"/isotone_arcticBranch/outputs/"+run_name):
+    os.makedirs(parentdir+"/isotone_arcticBranch/outputs/"+run_name)
+
 #%% Run the final model with full results
 post = params_post[:,0]
 fullmod_post = model(post,preamble,fullres="Y")
@@ -47,10 +52,10 @@ N_summary_full = fullmod_post[6]
 # 13-18: NH3 fert dep fix, leach fert dep fix
 
 #%% basics
-utils.plot_map(preamble.LON,preamble.LAT,k_G_post*100,"fraction of Nr lost to microbial gas production, post",filename="figs/202502_NewWFPS/f_gas_map",show=1)
-utils.plot_map(preamble.LON,preamble.LAT,k_G_post*f_N2O_post*100,"fraction of Nr lost to N2O, post",filename="figs/202502_NewWFPS/f_n2o_map",show=1)
-utils.plot_map(preamble.LON,preamble.LAT,k_G_prior*100,"fraction of Nr lost to microbial gas production, post",filename="figs/202502_NewWFPS/f_gas_map_prior",show=1)
-utils.plot_map(preamble.LON,preamble.LAT,k_G_prior*f_N2O_prior*100,"fraction of Nr lost to N2O, post",filename="figs/202502_NewWFPS/f_n2o_map_prior",show=1)
+utils.plot_map(preamble.LON,preamble.LAT,k_G_post*100,"fraction of Nr lost to microbial gas production, post",filename="figs/"+run_name+"/f_gas_map",show=1)
+utils.plot_map(preamble.LON,preamble.LAT,k_G_post*f_N2O_post*100,"fraction of Nr lost to N2O, post",filename="figs/"+run_name+"/f_n2o_map",show=1)
+utils.plot_map(preamble.LON,preamble.LAT,k_G_prior*100,"fraction of Nr lost to microbial gas production, prior",filename="figs/"+run_name+"/f_gas_map_prior",show=1)
+utils.plot_map(preamble.LON,preamble.LAT,k_G_prior*f_N2O_prior*100,"fraction of Nr lost to N2O, prior",filename="figs/"+run_name+"/f_n2o_map_prior",show=1)
 
 # global EF
 factor_area = (preamble.area_grid/1000/1000/1000/1000)
@@ -75,8 +80,8 @@ plt.plot(N_summary[:,0],N_summary[:,4],"-.",label="fix")
 plt.ylabel("N2O emissions (Tg N2O-N a-1)")
 plt.legend()
 fig.tight_layout()
-plt.savefig("figs/202502_NewWFPS/total_cat_emissions.png") 
-plt.savefig("figs/202502_NewWFPS/total_cat_emissions.pdf") 
+plt.savefig("figs/"+run_name+"/total_cat_emissions.png") 
+plt.savefig("figs/"+run_name+"/total_cat_emissions.pdf") 
 fig.show() 
 
 # Get map of emissions for a certain year
@@ -96,11 +101,12 @@ def getmap(y,preamble,post,k_G_post,f_N2O_post):
 emissions_2022, _, _, _ = getmap(2022,preamble,post,k_G_post,f_N2O_post)
 emissions_1800, _, _, _ = getmap(1800,preamble,post,k_G_post,f_N2O_post)
 
-utils.plot_map(preamble.LON,preamble.LAT,emissions_2022,"N2O (g-N m-2 a-1)",filename="figs/202502_NewWFPS/n2o_map",show=1)
-utils.plot_map(preamble.LON,preamble.LAT,emissions_2022-emissions_1800,"N2O anthrop (g-N m-2 a-1)",filename="figs/202502_NewWFPS/n2o_map_anthrop",show=1)
+utils.plot_map(preamble.LON,preamble.LAT,emissions_2022,"N2O (g-N m-2 a-1)",filename="figs/"+run_name+"/n2o_map_1800",show=1)
+utils.plot_map(preamble.LON,preamble.LAT,emissions_2022,"N2O (g-N m-2 a-1)",filename="figs/"+run_name+"/n2o_map_2022",show=1)
+utils.plot_map(preamble.LON,preamble.LAT,emissions_2022-emissions_1800,"N2O anthrop (g-N m-2 a-1)",filename="figs/"+run_name+"/n2o_map_anthrop_2022",show=1)
 vminmax = (-8,-1)
-utils.plot_map(preamble.LON,preamble.LAT,np.log(emissions_2022).clip(vminmax[0],vminmax[1]),"N2O (log, g-N m-2 a-1)",vminmax=vminmax,filename="figs/202502_NewWFPS/n2o_map_log",show=1)
-utils.plot_map(preamble.LON,preamble.LAT,np.log(emissions_2022-emissions_1800).clip(vminmax[0],vminmax[1]),"N2O, anthrop (log, g-N m-2 a-1)",vminmax=vminmax,filename="figs/202502_NewWFPS/n2o_map_anthrop_log",show=1)
+utils.plot_map(preamble.LON,preamble.LAT,np.log(emissions_2022).clip(vminmax[0],vminmax[1]),"N2O (log, g-N m-2 a-1)",vminmax=vminmax,filename="figs/"+run_name+"/n2o_map_log_2022",show=1)
+utils.plot_map(preamble.LON,preamble.LAT,np.log(emissions_2022-emissions_1800).clip(vminmax[0],vminmax[1]),"N2O, anthrop (log, g-N m-2 a-1)",vminmax=vminmax,filename="figs/"+run_name+"/n2o_map_anthrop_log_2022",show=1)
 
 # Emissions with latitude and time
 from matplotlib import colormaps
@@ -117,8 +123,12 @@ plt.ylabel("N2O emissions (10^6 g N2O-N a-1)")
 plt.legend()
 fig.tight_layout()
 fig.show() 
-plt.savefig("figs/202502_NewWFPS/emissions_by_lat.png") 
-plt.savefig("figs/202502_NewWFPS/emissions_by_lat.pdf") 
+plt.savefig("figs/"+run_name+"/emissions_by_lat.png") 
+plt.savefig("figs/"+run_name+"/emissions_by_lat.pdf") 
+emissions_by_lat_by_time_df = pd.DataFrame(emissions_by_lat_by_time)
+emissions_by_lat_by_time_df.columns = years_to_plot
+emissions_by_lat_by_time_df["lat"] = preamble.LAT[:,0]
+emissions_by_lat_by_time_df.to_csv("outputs/"+run_name+"/emissions_by_lat_time.csv") 
 
 # f_n2o against d15N_grid
 x = preamble.d15N_grid[datarng]
@@ -137,8 +147,8 @@ plt.ylabel("d15N (permil)")
 plt.ylabel("f_N2O")
 fig.tight_layout()
 fig.show() 
-plt.savefig("figs/202502_NewWFPS/d15N_fN2O.png") 
-plt.savefig("figs/202502_NewWFPS/d15N_fN2O.pdf") 
+plt.savefig("figs/"+run_name+"/d15N_fN2O.png") 
+plt.savefig("figs/"+run_name+"/d15N_fN2O.pdf") 
 
 #%% Compare to the Voigt flux dataset
 
@@ -179,6 +189,7 @@ for n in np.arange(voigt.shape[0]):
     voigt.loc[n,"f_N2O_post"] = f_N2O_post[i,j]
 voigt["EF_N2O_mod"] = voigt["k_G_post"]*voigt["f_N2O_post"]
 voigt["EF_N2O_obs"] = (voigt["annual_N2O_flux_ug_m2_100days-x-2"]/(10**6))/voigt["total_inputs"]
+voigt.to_csv("outputs/"+run_name+"/voigt_w_model.csv")     
     
 # Find where gridcells are well matched
 lat_res = np.nanmean(np.diff(lats))
@@ -218,6 +229,8 @@ ax[1,1].set_ylim([0,0.3])
 ax[0,1].set_ylabel("% of N inputs emitted as N2O annually")
 fig.tight_layout()
 plt.show()
+plt.savefig("figs/"+run_name+"/voigt_boxplots.png") 
+plt.savefig("figs/"+run_name+"/voigt_boxplots.pdf") 
 
 # 1:1 plot split by veg type
 fig, ax = plt.subplots(2,1,figsize=(5,8))
@@ -238,9 +251,26 @@ ax[1].set_xlabel("Observed flux (g-N m-2 y-1)")
 ax[1].set_ylabel("Modelled flux (g-N m-2 y-1)")
 fig.tight_layout()
 plt.show()
+plt.savefig("figs/"+run_name+"/voigt_1-to-1.png") 
+plt.savefig("figs/"+run_name+"/voigt_1-to-1.pdf") 
 
-plt.plot(np.log(voigt["annual_N2O_flux_ug_m2_100days-x-2"].iloc[r]/10**6),np.log(voigt["flux_model_year"].iloc[r]),"x")
+# 1:1 plot split by veg type, log
+fig, ax = plt.subplots(1,1,figsize=(5,5))
+r_veg = [ rr for rr in r if voigt['veg_type'].iloc[rr]=="Vegetated" ]
+r_pveg = [ rr for rr in r if voigt['veg_type'].iloc[rr]=="Partly vegetated" ]
+r_bare = [ rr for rr in r if voigt['veg_type'].iloc[rr]=="Bare" ]
+ax.plot(np.log(voigt["flux_model_year"].iloc[r]),np.log(voigt["flux_model_year"].iloc[r]),"c-")
+ax.plot(np.log(voigt["annual_N2O_flux_ug_m2_100days-x-2"].iloc[r_veg]/10**6),np.log(voigt["flux_model_year"].iloc[r_veg]),"go",label="Vegetated")
+ax.plot(np.log(voigt["annual_N2O_flux_ug_m2_100days-x-2"].iloc[r_pveg]/10**6),np.log(voigt["flux_model_year"].iloc[r_pveg]),"bo",label="Partly vegetated")
+ax.plot(np.log(voigt["annual_N2O_flux_ug_m2_100days-x-2"].iloc[r_bare]/10**6),np.log(voigt["flux_model_year"].iloc[r_bare]),"ro",label="Bare")
+ax.legend()
+ax.set_xlabel("Observed flux (g-N m-2 y-1)")
+ax.set_ylabel("Modelled flux (g-N m-2 y-1)")
+ax.set_ylim([-14,4])
+fig.tight_layout()
 plt.show()
+plt.savefig("figs/"+run_name+"/voigt_1-to-1_log.png") 
+plt.savefig("figs/"+run_name+"/voigt_1-to-1_log.pdf") 
 
 from sklearn.linear_model import LinearRegression
 X = np.array(voigt["annual_N2O_flux_ug_m2_100days-x-2"].iloc[r]/10**6)
