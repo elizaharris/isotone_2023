@@ -156,6 +156,55 @@ plt.savefig("figs/"+run_name+"/d15N_fN2O.pdf")
 
 voigt = pd.read_csv("data/N2OFluxes_Voigt-etal_2020_dk20250212.csv")
 
+# Look at Voigt dataset with a PCA
+voigt_num = [ s for s in voigt.columns if isinstance(voigt[s].iloc[0], float) ] # numeric columns
+voigt_nans = [ sum(np.isnan(voigt[s])) for s in voigt_num ]
+voigt_fewnans = np.where(np.array(voigt_nans) < voigt.shape[0]/3)[0]
+voigt_fewnans = [ voigt_num[r] for r in voigt_fewnans ]
+columns_not_for_pca = ['month_start', 'day_start', 'month_end', 'day_end',
+                       'orig_flux_value', 'time_min', 'max_closure_time_min', 'points_per_closure']
+voigt_colsforpca = list(set(voigt_fewnans).difference(columns_not_for_pca))
+print(str(len(voigt_fewnans))+" columns valid for pca")
+voigt_forpca = voigt[voigt_colsforpca].copy()
+for c in voigt_forpca.columns:
+    fillv = np.nanmean(voigt_forpca[c]) # Fill nans with the mean for the columns
+    voigt_forpca[c] = voigt_forpca[c].fillna(fillv)
+### NORMALISE TO 0-1!
+from sklearn.decomposition import PCA
+from sklearn.preprocessing import StandardScaler
+pca = PCA()
+pca_results = pca.fit_transform(voigt_forpca)
+# Scree plot
+explained_variance = pca.explained_variance_ratio_
+plt.figure(figsize=(10, 6))
+plt.plot(range(1, len(explained_variance) + 1), # x-axis
+         explained_variance*100, marker='o')
+plt.xlabel('Principal Component')
+plt.ylabel('Explained Variance (in %)')
+plt.xticks(range(1, len(explained_variance) + 1))
+plt.show()
+# Correlation plot
+loadings = pca.components_.T * np.sqrt(explained_variance)
+plt.figure(figsize=(8, 8))
+plt.title('Correlation Circle Plot')
+plt.xlabel('Principal Component 1')
+plt.ylabel('Principal Component 2')
+for i, feature in enumerate(voigt_forpca.columns):
+    plt.annotate(feature, # variable name
+                 (loadings[i, 0],
+                  loadings[i, 1]),
+                 color='red')
+    plt.arrow(0, 0,
+              loadings[i, 0],
+              loadings[i, 1],
+              color='black',
+              alpha=0.7, 
+              width=0.01,
+             )
+plt.xlim(-1,1)
+plt.ylim(-1,1)
+plt.show()
+
 voigt["flux_model_year"] = np.nan # space for flux 
 voigt["flux_model_1800"] = np.nan # space for flux in 1800 (preindustrial)
 voigt["flux_model_2020"] = np.nan # space for flux in 2020 (current)
@@ -174,6 +223,8 @@ for n in np.arange(voigt.shape[0]):
     i = np.where( abs(lats-voigt["latitude"].iloc[n]) == np.nanmin(abs(lats-voigt["latitude"].iloc[n])) )[0]
     voigt.loc[n,"flux_model_lon_mismatch"] = np.nanmin(abs(lons-voigt["longitude"].iloc[n]))
     j = np.where( abs(lons-voigt["longitude"].iloc[n]) == np.nanmin(abs(lons-voigt["longitude"].iloc[n])) )[0]
+    i = i[0] if len(i) > 1 else i 
+    j = j[0] if len(j) > 1 else j 
     # 1800 and 2020 fluxes
     voigt.loc[n,"flux_model_1800"] = emissions_1800[i,j]
     voigt.loc[n,"flux_model_2020"] = emissions_2020[i,j]
@@ -196,6 +247,7 @@ lat_res = np.nanmean(np.diff(lats))
 lon_res = np.nanmean(np.diff(lons))
 r = np.where( (voigt["flux_model_lat_mismatch"]<2*lat_res) & (voigt["flux_model_lon_mismatch"]<2*lon_res) )[0]
 
+plt.close("all")
 # Combined visualisation of fluxes and EFs by box/whisker plots
 fig, ax = plt.subplots(2,2,figsize=(12,6))
 # Annual fluxes
@@ -228,9 +280,9 @@ ax[1,1].boxplot(data)
 ax[1,1].set_ylim([0,0.3])
 ax[0,1].set_ylabel("% of N inputs emitted as N2O annually")
 fig.tight_layout()
-plt.show()
 plt.savefig("figs/"+run_name+"/voigt_boxplots.png") 
 plt.savefig("figs/"+run_name+"/voigt_boxplots.pdf") 
+plt.show()
 
 # 1:1 plot split by veg type
 fig, ax = plt.subplots(2,1,figsize=(5,8))
@@ -250,9 +302,9 @@ ax[0].legend()
 ax[1].set_xlabel("Observed flux (g-N m-2 y-1)")
 ax[1].set_ylabel("Modelled flux (g-N m-2 y-1)")
 fig.tight_layout()
-plt.show()
 plt.savefig("figs/"+run_name+"/voigt_1-to-1.png") 
 plt.savefig("figs/"+run_name+"/voigt_1-to-1.pdf") 
+plt.show()
 
 # 1:1 plot split by veg type, log
 fig, ax = plt.subplots(1,1,figsize=(5,5))
@@ -268,9 +320,9 @@ ax.set_xlabel("Observed flux (g-N m-2 y-1)")
 ax.set_ylabel("Modelled flux (g-N m-2 y-1)")
 ax.set_ylim([-14,4])
 fig.tight_layout()
-plt.show()
 plt.savefig("figs/"+run_name+"/voigt_1-to-1_log.png") 
 plt.savefig("figs/"+run_name+"/voigt_1-to-1_log.pdf") 
+plt.show()
 
 from sklearn.linear_model import LinearRegression
 X = np.array(voigt["annual_N2O_flux_ug_m2_100days-x-2"].iloc[r]/10**6)
@@ -278,6 +330,8 @@ y = np.array(voigt["flux_model_year"].iloc[r])
 rr = [ not np.isnan(yy) for yy in y ]
 reg = LinearRegression().fit(X[rr].reshape(-1, 1), y[rr])
 reg.score(X[rr].reshape(-1, 1), y[rr])
+
+
 
 #### FROM global version; incorporate some of these later...
 
