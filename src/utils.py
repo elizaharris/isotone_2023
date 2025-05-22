@@ -24,8 +24,8 @@ def prob_g(x,x0,sigma):
     return np.nanmean(res)
 
 # define function for plotting    
-def plot_map(longi,lati,gridval,title="title",vminmax=(np.nan,np.nan),cmap="viridis",filename="figs/testfig") :
-    fig = plt.figure(figsize=(8,4))
+def plot_map(longi,lati,gridval,title="title",vminmax=(np.nan,np.nan),cmap="viridis",filename="figs/testfig",show=0) :
+    fig = plt.figure(figsize=(12,6))
     ax = fig.add_subplot(1,1,1,projection=ccrs.PlateCarree())
     ax.coastlines()
     ax.set_title(title)
@@ -38,7 +38,8 @@ def plot_map(longi,lati,gridval,title="title",vminmax=(np.nan,np.nan),cmap="viri
     fig.tight_layout()
     plt.savefig(filename+".png") 
     plt.savefig(filename+".pdf") 
-    fig.show() 
+    if show==1:
+        fig.show() 
 
 # function for mean by "climate zones" defined by 2 variables
 def climzone_means(var1_grid, var2_grid, datavar1,datavar2,data,LON,LAT,bins=4,plotfigs="N"):  
@@ -97,13 +98,18 @@ def climzone_means(var1_grid, var2_grid, datavar1,datavar2,data,LON,LAT,bins=4,p
         return(res)
     
 # function to transform to a list of lon, lat, values and average every X points
-def rast_to_list(rastdata,Xred,takemean="Y",dataclip="N") :
+def rast_to_list(rastdata,Xred,takemean="Y",dataclip="N",replace_w_nan="N") :
     arrdata = rastdata.read(1)
     if dataclip != "N" : arrdata = arrdata.clip(dataclip[0],dataclip[1])
+    if replace_w_nan != "N" : arrdata[arrdata==replace_w_nan] = np.nan
     output = np.zeros((round(arrdata.shape[0]/Xred)*round(arrdata.shape[1]/Xred),3))
     z = 0
     for n in range(0,round(arrdata.shape[0]/Xred)) :
+        if n % 100 == 0: 
+            print("n = "+str(n)+"(total = "+str(arrdata.shape[0]/Xred)+")")
         for i in range(0,round(arrdata.shape[1]/Xred)) :
+            #if i % 100 == 0: 
+                #print("n = "+str(n)+"; i = "+str(i)+" (total = "+str(arrdata.shape[0]/Xred)+","+str(arrdata.shape[1]/Xred)+")")
             nmid = int(n*Xred+Xred/2)
             imid = int(i*Xred+Xred/2)
             tmp = rio.transform.TransformMethodsMixin.xy(rastdata,nmid,imid)
@@ -113,14 +119,22 @@ def rast_to_list(rastdata,Xred,takemean="Y",dataclip="N") :
                 nvals = np.repeat(range(int(nmid-Xred/2),int(nmid+Xred/2)),Xred) # repeats each element X times
                 ivals = np.tile(range(int(imid-Xred/2),int(imid+Xred/2)),Xred) # repeats whole range X times
             if takemean == "N" :  # take only the single points at each Xred
-                nvals = nmid # repeats each element X times
-                ivals = imid # repeats whole range X times
+                nvals = nmid 
+                ivals = imid 
             output[z,2] = np.nanmean(arrdata[nvals,ivals])
             z = z+1
     return output
 
 # function to transform to a list of lon, lat, values and average every X points
 def nc_to_list(loni,lati,data) :
+    output = np.zeros((loni.shape[0]*lati.shape[0],3))
+    output[:,0] = np.tile(loni,lati.shape[0])
+    output[:,1] = np.repeat(lati,loni.shape[0])
+    output[:,2] = data.flatten()
+    return output
+
+# function to transform to a list of lon, lat, values and average every X points
+def grid_to_list(loni,lati,data) :
     output = np.zeros((loni.shape[0]*lati.shape[0],3))
     output[:,0] = np.tile(loni,lati.shape[0])
     output[:,1] = np.repeat(lati,loni.shape[0])
