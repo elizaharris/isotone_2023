@@ -23,6 +23,68 @@ def prob_g(x,x0,sigma):
     res = scipy.stats.norm(0, 1).pdf(tmp) # Find probability density of each value in Gaussian
     return np.nanmean(res)
 
+# Export model results if desired
+def export_model_results(fullmod,suffix): 
+    fname = "outputs/"+run_name+'/isotone_output'+suffix+'.nc'
+    if os.path.exists(fname):
+        os.remove(fname)
+    ncout = nc4.Dataset(fname,'w','NETCDF4'); # using netCDF3 for output format 
+    ncout.createDimension('obs_dim',fullmod_post[0].shape[0])
+    ncout.createDimension('lon',preamble.LON.shape[1])
+    ncout.createDimension('lat',preamble.LAT.shape[0])
+    ncout.createDimension('datarng_len',len(datarng[0]))
+    ncout.createDimension('datarng_dim',2)
+    ncout.createDimension('time',len(preamble.years))
+    ncout.createDimension('soilmodres_dim',fullmod_post[3].shape[1])
+    ncout.createDimension('N_processes_vec_dim',fullmod_post[4].shape[1])
+    ncout.createDimension('N_summary_dim',fullmod_post[5].shape[1])
+    ncout.createDimension('N_summary_full_dim',fullmod_post[6].shape[1])
+    lonvar = ncout.createVariable('lon','f4',('lon'))
+    lonvar[:] = preamble.LON[0,:]
+    lonvar.setncattr('units','degrees east')
+    latvar = ncout.createVariable('lat','f4',('lat'))
+    latvar[:] = preamble.LAT[:,0]
+    latvar.setncattr('units','degrees north')
+    timevar = ncout.createVariable('time','f4',('time'))
+    timevar[:]= preamble.years
+    x = np.zeros((len(datarng[0]),2)) # Convert shape of datarng to array
+    x[:,0] = datarng[0]; x[:,1] = datarng[1]
+    datarngvar = ncout.createVariable('datarng','f4',('datarng_len','datarng_dim'))
+    datarngvar[:,:] = x[:,:]
+    datarngvar.setncattr('description','positions on lat-lon grid with non-nan values')
+    model_res = ncout.createVariable('model_res','f4',('obs_dim'))
+    model_res.setncattr('units','Varying; see linked observations')
+    model_res.setncattr('source','fullmod[0]')
+    model_res[:] = fullmod[0]
+    soilmodres = ncout.createVariable('soilmodres','f4',('datarng_len','soilmodres_dim'))
+    soilmodres.setncattr('units','Varying; see model')
+    soilmodres.setncattr('source','fullmod[3]')
+    soilmodres[:,:] = fullmod[3]
+    N_processes_vec = ncout.createVariable('N_processes_vec','f4',('datarng_len','N_processes_vec_dim'))
+    N_processes_vec.setncattr('units','Varying; see model')
+    N_processes_vec.setncattr('source','fullmod[4]')
+    N_processes_vec[:,:] = fullmod[4]
+    N_summary = ncout.createVariable('N_summary','f4',('time','N_summary_dim'))
+    N_summary.setncattr('units','Varying; see model')
+    N_summary.setncattr('source','fullmod[5]')
+    N_summary[:,:] = fullmod[5]
+    N_summary_full = ncout.createVariable('N_summary_full','f4',('time','N_summary_full_dim'))
+    N_summary_full.setncattr('units','Varying; see model')
+    N_summary_full.setncattr('source','fullmod[6]')
+    N_summary_full[:,:] = fullmod[6]
+    ncout.close()
+    # test the file!
+    f = nc4.Dataset(fname,'r')
+    a_nc = np.nanmean(f.variables['N_summary_full'][:,:])
+    a = np.nanmean(fullmod[6][:,:])
+    b_nc = np.nanmean(f.variables['N_processes_vec'][:,:])
+    b = np.nanmean(fullmod[4][:,:])
+    if (round(a,3)-round(a_nc,3)<0.0001) & (round(b,3)-round(b_nc,3)<0.0001):
+        res = "Success"
+    else:
+        res = "Something went wrong!"
+    return res
+
 # define function for plotting    
 def plot_map(longi,lati,gridval,title="title",vminmax=(np.nan,np.nan),cmap="viridis",filename="figs/testfig",show=0) :
     fig = plt.figure(figsize=(12,6))

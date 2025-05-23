@@ -17,9 +17,10 @@ import math as math
 import time
 import datetime
 from importlib import reload
+import netCDF4 as nc4
 
 parentdir = os.getcwd()
-os.chdir(parentdir+"/isotone_arcticBranch") # Change to the isotone repo as working directory
+os.chdir(parentdir+"/isotone_2025") # Change to the isotone repo as working directory
 
 # Import the full preamble (Pt1_Final_Preamble.py, to load all required data!)
 import src.Pt1_Final_Preamble as preamble
@@ -27,7 +28,7 @@ from src.Pt1_Final_Preamble import configs # The stuff used often also imported 
 import src.Pt2_Final_Model_v4 as model_script
 from src.Pt2_Final_Model_v4 import model
 import src.utils as utils
-from src.utils import prob_u, prob_g
+from src.utils import prob_u, prob_g, export_model_results
 
 #%% Set up for the MCMC
 # Run this section even if only looking at results with script 4!
