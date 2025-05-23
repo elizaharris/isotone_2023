@@ -14,7 +14,11 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import os
 import math
+
+parentdir = os.getcwd()
+os.chdir(parentdir+"/isotone_2025")
 import configs as configs
+run_name = configs.run_name
 
 # Function to turn string date to approx. decimal
 def date_as_decimal(date,sep) :
@@ -202,7 +206,7 @@ for n in np.arange(3):
     ax[n].set_xlim(1730,2030)
 ax[0].legend(datasets,fontsize=5)
 fig.tight_layout()
-filename = "figs/atmosdata_overview"
+filename = "figs/"+run_name+"/atmosdata_overview"
 plt.savefig(filename+".png") 
 plt.savefig(filename+".pdf") 
 fig.show() 
