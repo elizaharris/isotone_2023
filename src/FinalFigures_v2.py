@@ -53,9 +53,9 @@ N_summary_full = fullmod_post[6]
 
 # Save if desired
 if 1:
-    res = export_model_results(fullmod_post,"_post")
+    res = export_model_results(fullmod_post,"_post",run_name)
     print("Model saving: "+res)
-    res = export_model_results(fullmod_prior,"_post")
+    res = export_model_results(fullmod_prior,"_post",run_name)
     print("Model saving: "+res)
 
 #%% basics

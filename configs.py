@@ -1,6 +1,6 @@
 
 # Set a name for this model run (no protected chacacters, including the date is a good idea)
-run_name = "Longfei_22052025"
+run_name = "Longfei_28052025_DanWFPS"
 
 # set time range and resolution
 res = {

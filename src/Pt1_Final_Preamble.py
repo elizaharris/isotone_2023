@@ -68,6 +68,9 @@ BulkD_grid = inputs.variables["BulkD"][:,:]; plot_map(LON,LAT,BulkD_grid,"Bulk D
 WFPS_grid = inputs.variables["WFPS"][:,:]*100; plot_map(LON,LAT,WFPS_grid,"WFPS (%)")
 d15N_grid_new = inputs.variables["soild15N"][:,:]; plot_map(LON,LAT,d15N_grid_new,"d15N")
 d15Nerr_grid_new = inputs.variables["soild15N_BSUnc"][:,:]; plot_map(LON,LAT,d15Nerr_grid_new,"d15N uncertainty")
+# Get new WFPS from Dan
+wfps = nc4.Dataset('data/largeData/wfps_new_data.nc','r')
+WFPS_grid = wfps.variables["wfps_mean"][:,:]; plot_map(LON,LAT,WFPS_grid,"WFPS (%)")
 
 # For d15N, use an old dataset for now...
 inputs = nc4.Dataset('data/climate_input_data_old.nc','r') 

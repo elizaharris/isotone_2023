@@ -24,7 +24,7 @@ def prob_g(x,x0,sigma):
     return np.nanmean(res)
 
 # Export model results if desired
-def export_model_results(fullmod,suffix): 
+def export_model_results(fullmod,suffix,run_name): 
     fname = "outputs/"+run_name+'/isotone_output'+suffix+'.nc'
     if os.path.exists(fname):
         os.remove(fname)
